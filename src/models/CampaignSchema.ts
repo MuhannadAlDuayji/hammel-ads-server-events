@@ -1,6 +1,7 @@
 import * as mongoose from "mongoose";
 import { CampaignStatus } from "../types/campaign/CampaignStatus";
 import Campaign from "../types/campaign";
+import Event from "../types/event";
 
 const campaignSchema = new mongoose.Schema({
     title: {
@@ -64,6 +65,10 @@ const campaignSchema = new mongoose.Schema({
     adminMessage: {
         type: String,
         default: null,
+    },
+    events: {
+        type: Array<Event>,
+        default: [],
     },
 });
 

@@ -2,7 +2,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import connection from "./services/db";
-import analyticsRoutes from "./routes/analytics";
+import eventRoutes from "./routes/events";
 // import userRoutes from "./routes/user";
 // import campaignRoutes from "./routes/campaigns";
 // import paymentRoutes from "./routes/payments";
@@ -22,7 +22,7 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.disable("x-powered-by");
 
 // routes
-app.use("/api/analytics", analyticsRoutes);
+app.use("/api/events", eventRoutes);
 
 // port
 const port: number = Number(process.env.PORT) || 3501;

@@ -1,5 +1,5 @@
 import * as mongoose from "mongoose";
-import IUser from "../types/user/";
+import IUser from "../types/user";
 import { UserType } from "../types/user/UserType";
 import crypto from "crypto";
 import UserPaymentMethodType from "../types/payment method";

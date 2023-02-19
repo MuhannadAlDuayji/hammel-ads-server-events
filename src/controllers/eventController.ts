@@ -8,6 +8,9 @@ import { ValidationError, ValidationResult } from "../types/validation";
 import crypto from "crypto";
 import { validationResult } from "express-validator";
 import { isValidObjectId } from "mongoose";
+import Event from "../types/event";
+import { EventType } from "../types/event/EventType";
+import { CampaignStatus } from "../types/campaign/CampaignStatus";
 
 class EventController {
     static save = async (req: Request, res: Response) => {
@@ -24,7 +27,7 @@ class EventController {
                 });
             }
 
-            let {
+            const {
                 type,
                 campaignId,
                 userId,
@@ -48,25 +51,7 @@ class EventController {
                 });
             }
 
-            const campaign = await campaignSchema.findById(campaignId);
-            if (!campaign) {
-                return res.status(400).json({
-                    status: "error",
-                    message:
-                        "invalid campaignId: no such campaign with id: " +
-                        campaignId,
-                });
-            }
-
-            const user = await userSchema.findById(userId);
-            if (!user) {
-                return res.status(400).json({
-                    status: "error",
-                    message: "invalid userId: no such user with id: " + userId,
-                });
-            }
-
-            const event = new eventSchema({
+            const event: Event = {
                 type,
                 campaignId,
                 userId,
@@ -75,9 +60,44 @@ class EventController {
                 watchTimeStart,
                 watchTimeEnd,
                 watchTime,
-            });
+            };
 
-            await event.save();
+            const campaign = await campaignSchema.findById(campaignId);
+
+            if (!campaign)
+                return res
+                    .status(404)
+                    .json({ status: "error", message: "campaign not found" });
+
+            campaign.events.push(event);
+
+            if (event.type === EventType.VIEW) {
+                const cost =
+                    (Number(process.env.THOUSAND_VIEWS_COST) || 1) / 1000;
+
+                const currentBalance: number = await this.chargeUser(
+                    userId,
+                    cost,
+                    res
+                );
+                campaign.moneySpent += cost;
+                campaign.views = (campaign.views as number) + 1;
+
+                if (campaign.moneySpent >= campaign.budget)
+                    campaign.status = CampaignStatus.ENDED;
+                if (cost > currentBalance)
+                    campaign.status = CampaignStatus.WAITINGFORFUNDS;
+            }
+
+            if (event.type === EventType.CLICK) {
+                campaign.clicks = (campaign.clicks as number) + 1;
+            }
+
+            campaign.clickRate =
+                ((campaign.clicks as number) / (campaign.views as number)) *
+                100;
+
+            await campaign.save();
 
             res.status(200).json({
                 status: "success",
@@ -93,6 +113,35 @@ class EventController {
             }
             console.log(err);
 
+            res.status(500).json({
+                status: "error",
+                message: "internal server error",
+            });
+        }
+    };
+
+    private static chargeUser = async (
+        userId: string,
+        cost: number,
+        res: any
+    ) => {
+        try {
+            const user = await userSchema.findById(userId);
+            if (!user)
+                return res.status(400).json({
+                    status: "error",
+                    message: "user not found",
+                });
+
+            if (user.balance - cost < 0) {
+                user.balance = 0;
+            } else {
+                user.balance -= cost;
+            }
+
+            await user.save();
+            return user.balance;
+        } catch (err) {
             res.status(500).json({
                 status: "error",
                 message: "internal server error",
@@ -128,6 +177,29 @@ get One campaign analytics
     clickRate: number,
     spent: number,
 }
+
+
+Events Server ( /events [save|load], '/analytics' [])
+
+SAVE EVENTS AND LOAD EVENTS
+
+SAVE EVENTS PART:
+
+save event object in campaign
+change campaign stats (clicks, views, clickRate, spent)
+charge the user if event is "view"
+change campaign status if balance is not enough to watingforfunds (load event won't show campaign unless correct status)
+
+
+LOAD EVENTS:
+...
+
+
+
+ANALYTICS PART:
+
+
+
 
 
 */
