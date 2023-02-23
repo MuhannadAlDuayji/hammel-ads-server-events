@@ -9,4 +9,5 @@ export default interface Event {
     watchTimeStart: number | null;
     watchTimeEnd: number | null;
     watchTime: number | null;
+    createdAt: Date;
 }

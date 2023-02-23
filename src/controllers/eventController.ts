@@ -60,6 +60,7 @@ class EventController {
                 watchTimeStart,
                 watchTimeEnd,
                 watchTime,
+                createdAt: new Date(Date.now()),
             };
 
             const campaign = await campaignSchema.findById(campaignId);
@@ -75,11 +76,15 @@ class EventController {
                 const cost =
                     (Number(process.env.THOUSAND_VIEWS_COST) || 1) / 1000;
 
-                const currentBalance: number = await this.chargeUser(
-                    userId,
-                    cost,
-                    res
+                const currentBalance: number | null = await this.chargeUser(
+                    campaign.userId,
+                    cost
                 );
+                if (currentBalance === null)
+                    return res.status(500).json({
+                        status: "error",
+                        message: "internal server error",
+                    });
                 campaign.moneySpent += cost;
                 campaign.views = (campaign.views as number) + 1;
 
@@ -99,7 +104,7 @@ class EventController {
 
             await campaign.save();
 
-            res.status(200).json({
+            return res.status(200).json({
                 status: "success",
                 message: "event saved",
                 event,
@@ -120,88 +125,24 @@ class EventController {
         }
     };
 
-    private static chargeUser = async (
-        userId: string,
-        cost: number,
-        res: any
-    ) => {
+    private static chargeUser = async (userId: string, cost: number) => {
         try {
             const user = await userSchema.findById(userId);
-            if (!user)
-                return res.status(400).json({
-                    status: "error",
-                    message: "user not found",
-                });
+            if (!user) return null;
 
             if (user.balance - cost < 0) {
                 user.balance = 0;
             } else {
                 user.balance -= cost;
             }
+            console.log(user.balance);
 
             await user.save();
             return user.balance;
         } catch (err) {
-            res.status(500).json({
-                status: "error",
-                message: "internal server error",
-            });
+            return null;
         }
     };
 }
-
-// events collection
-
-/* 
-each event will contain the following properties
-
-- id: string
-- type: "view", "click", "close"
-- campaignId: string
-- userId: string
-- deviceId: string
-- placementId: string
-- watchTimeStart?: date in milliseconds
-- watchTimeEnd?: date in milliseconds
-- watchTime?: number
-
-get all campaign analytics
-
-
-get One campaign analytics
-
-
-{
-    views: number,
-    clicks: number,
-    clickRate: number,
-    spent: number,
-}
-
-
-Events Server ( /events [save|load], '/analytics' [])
-
-SAVE EVENTS AND LOAD EVENTS
-
-SAVE EVENTS PART:
-
-save event object in campaign
-change campaign stats (clicks, views, clickRate, spent)
-charge the user if event is "view"
-change campaign status if balance is not enough to watingforfunds (load event won't show campaign unless correct status)
-
-
-LOAD EVENTS:
-...
-
-
-
-ANALYTICS PART:
-
-
-
-
-
-*/
 
 export default EventController;
