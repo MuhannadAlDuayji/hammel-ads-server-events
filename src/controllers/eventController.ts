@@ -27,12 +27,23 @@ class EventController {
                 });
             }
 
+            // const {
+            //     type,
+            //     campaignId,
+            //     userId,
+            //     deviceId,
+            //     placementId,
+            //     watchTimeStart,
+            //     watchTimeEnd,
+            //     watchTime,
+            // } = req.body;
+
             const {
-                type,
-                campaignId,
-                userId,
-                deviceId,
-                placementId,
+                event: type,
+                adID: campaignId,
+                userID: userId,
+                deviceID: deviceId,
+                placementID: placementId,
                 watchTimeStart,
                 watchTimeEnd,
                 watchTime,
@@ -110,12 +121,6 @@ class EventController {
                 event,
             });
         } catch (err: any) {
-            if (err?.keyValue) {
-                return res.status(400).json({
-                    status: "error",
-                    message: `${Object.keys(err.keyValue)[0]} already in use`,
-                });
-            }
             console.log(err);
 
             res.status(500).json({

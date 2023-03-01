@@ -3,7 +3,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import connection from "./services/db";
 import eventRoutes from "./routes/events";
-import analyiticsRoutes from "./routes/analytics";
+import loadRoutes from "./routes/loads";
 
 // import userRoutes from "./routes/user";
 // import campaignRoutes from "./routes/campaigns";
@@ -24,8 +24,8 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.disable("x-powered-by");
 
 // routes
-app.use("/api/events", eventRoutes);
-app.use("/api/analytics", analyiticsRoutes);
+app.use("/api/event", eventRoutes);
+app.use("/api/load", loadRoutes);
 
 // port
 const port: number = Number(process.env.PORT) || 3501;

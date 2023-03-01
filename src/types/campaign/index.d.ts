@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { CampaignStatus } from "./CampaignStatus";
 import Event from "../event";
+import Load from "../load";
 export default interface Campaign {
     title: string;
     startDate: Date;
@@ -19,4 +20,5 @@ export default interface Campaign {
     moneySpent: number;
     adminMessage: string;
     events: Array<Event>;
+    loads: Array<Load>;
 }
