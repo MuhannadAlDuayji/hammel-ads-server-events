@@ -1,15 +1,6 @@
 import { Request, Response } from "express";
-import campaignSchema from "../models/CampaignSchema";
-import eventSchema from "../models/EventSchema";
-import userSchema from "../models/UserSchema";
-
 import { ValidationError, ValidationResult } from "../types/validation";
-
-import crypto from "crypto";
 import { validationResult } from "express-validator";
-import { isValidObjectId } from "mongoose";
-import Event from "../types/event";
-import { EventType } from "../types/event/EventType";
 import { CampaignStatus } from "../types/campaign/CampaignStatus";
 import Campaign from "../models/CampaignSchema";
 import Load from "../types/load";
@@ -38,7 +29,14 @@ class LoadController {
             const campaigns = await Campaign.find({
                 startDate: { $lte: now },
                 endDate: { $gte: now },
+                status: { $in: [CampaignStatus.READY, CampaignStatus.ACTIVE] },
             });
+
+            if (campaigns.length === 0)
+                return res.status(404).json({
+                    status: "error",
+                    message: "no campaigns to load",
+                });
 
             // removing campaigns that the (served loads + pending loads)*price > budget
             let filteredCampaigns = campaigns.filter((campaign) => {
@@ -57,11 +55,17 @@ class LoadController {
                     Number(process.env.THOUSAND_VIEWS_COST);
 
                 return (
-                    totalCost <= campaign.budget
-                    // &&
+                    totalCost <= campaign.budget * 1.1
+                    //  &&
                     // !this.isViewedInPastDay(deviceID, campaign.loads)
                 );
             });
+
+            if (filteredCampaigns.length === 0)
+                return res.status(404).json({
+                    status: "error",
+                    message: "no campaigns to load",
+                });
 
             // calculate campaigns serve needs
 
@@ -76,12 +80,14 @@ class LoadController {
                     campaign.loads
                 );
 
-                const totalNeeds =
+                let totalNeeds =
                     (campaign.budget /
                         Number(process.env.THOUSAND_VIEWS_COST)) *
                         1000 -
                     servedCount -
                     pendingCount;
+
+                if (totalNeeds < 0) totalNeeds = 0;
 
                 const endDate = new Date(campaign.endDate);
 
@@ -91,24 +97,31 @@ class LoadController {
                 const remainingHours = diffInMs / (1000 * 60 * 60);
 
                 console.log(remainingHours); // Output: number of remaining hours between now and the end date of the campaign
-                const campaignNeeds = totalNeeds - remainingHours;
+                const campaignNeeds = totalNeeds / remainingHours;
+
                 return {
                     campaign,
                     campaignNeeds,
                 };
             });
 
-            const selectedCampaign =
-                this.pickRandomCampaign(campaignArray).campaign;
-
-            console.log(selectedCampaign);
+            const selectedCampaign = this.pickRandomCampaign(campaignArray);
 
             selectedCampaign.loads.push(
                 this.newLoadObject(deviceID, placementID)
             );
             await selectedCampaign.save();
 
-            res.send(selectedCampaign);
+            res.status(200).json({
+                status: "success",
+                data: {
+                    title: selectedCampaign.title,
+                    url: selectedCampaign.link,
+                    img: selectedCampaign.photoPath,
+                    userId: selectedCampaign.userId,
+                    campaignId: selectedCampaign._id,
+                },
+            });
         } catch (err: any) {
             console.log(err);
             res.status(500).json({
@@ -176,12 +189,12 @@ class LoadController {
         for (const campaign of array) {
             acc += campaign.campaignNeeds;
             if (random < acc) {
-                return campaign;
+                return campaign.campaign;
             }
         }
 
         // If no number was selected, return the last one
-        return array[array.length - 1];
+        return array[array.length - 1].campaign;
     };
 }
 
