@@ -11,6 +11,7 @@ import { isValidObjectId } from "mongoose";
 import Event from "../types/event";
 import { EventType } from "../types/event/EventType";
 import { CampaignStatus } from "../types/campaign/CampaignStatus";
+import { LoadStatus } from "../types/load/LoadStatus";
 
 class EventController {
     static save = async (req: Request, res: Response) => {
@@ -39,11 +40,10 @@ class EventController {
             // } = req.body;
 
             const {
-                event: type,
-                adID: campaignId,
-                userID: userId,
-                deviceID: deviceId,
-                placementID: placementId,
+                type,
+                campaignId,
+                deviceId,
+                placementId,
                 watchTimeStart,
                 watchTimeEnd,
                 watchTime,
@@ -55,17 +55,17 @@ class EventController {
                     message: "invalid campaignId",
                 });
             }
-            if (!isValidObjectId(userId)) {
-                return res.status(400).json({
-                    status: "error",
-                    message: "invalid userId",
-                });
-            }
+            // if (!isValidObjectId(userId)) {
+            //     return res.status(400).json({
+            //         status: "error",
+            //         message: "invalid userId",
+            //     });
+            // }
 
             const event: Event = {
                 type,
                 campaignId,
-                userId,
+                // userId,
                 deviceId,
                 placementId,
                 watchTimeStart,
@@ -103,6 +103,21 @@ class EventController {
                     campaign.status = CampaignStatus.ENDED;
                 if (cost > currentBalance)
                     campaign.status = CampaignStatus.WAITINGFORFUNDS;
+
+                // make the load served
+                const updatedLoads = campaign.loads;
+                for (const load of updatedLoads) {
+                    console.log(load);
+                    if (
+                        load.deviceID === deviceId &&
+                        load.placementID === placementId
+                    ) {
+                        load.status = LoadStatus.SERVED;
+                    }
+                }
+
+                campaign.loads = updatedLoads;
+                await campaign.save();
             }
 
             if (event.type === EventType.CLICK) {

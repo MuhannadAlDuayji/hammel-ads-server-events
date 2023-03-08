@@ -5,7 +5,6 @@ import { CampaignStatus } from "../types/campaign/CampaignStatus";
 import Campaign from "../models/CampaignSchema";
 import Load from "../types/load";
 import { LoadStatus } from "../types/load/LoadStatus";
-
 class LoadController {
     static load = async (req: Request, res: Response) => {
         try {
@@ -21,7 +20,7 @@ class LoadController {
                 });
             }
 
-            const { deviceID, placementID } = req.body;
+            const { deviceID, placementID, region } = req.body;
 
             // filter campaigns with show period startDate >= now >= endDate
 
@@ -37,6 +36,8 @@ class LoadController {
                     status: "error",
                     message: "no campaigns to load",
                 });
+
+            let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
             // removing campaigns that the (served loads + pending loads)*price > budget
             let filteredCampaigns = campaigns.filter((campaign) => {
@@ -55,7 +56,9 @@ class LoadController {
                     Number(process.env.THOUSAND_VIEWS_COST);
 
                 return (
-                    totalCost <= campaign.budget * 1.1
+                    totalCost <= campaign.budget * 1.1 &&
+                    campaign.country === regionNames.of(region)
+
                     //  &&
                     // !this.isViewedInPastDay(deviceID, campaign.loads)
                 );

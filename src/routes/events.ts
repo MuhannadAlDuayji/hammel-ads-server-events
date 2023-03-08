@@ -7,11 +7,10 @@ const router = express.Router();
 
 router.post(
     "/",
-    body("event").isIn(Object.values(EventType)),
-    body("adID").notEmpty(),
-    body("userID").notEmpty(),
-    body("deviceID").notEmpty(),
-    body("placementID").notEmpty(),
+    body("type").isIn(Object.values(EventType)),
+    body("campaignId").notEmpty(),
+    body("deviceId").notEmpty(),
+    body("placementId").notEmpty(),
     EventController.save
 );
 
