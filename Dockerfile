@@ -8,6 +8,6 @@ RUN npm install --production
 
 COPY . .
 
-EXPOSE 8080
+EXPOSE 3501
 
 CMD [ "npm", "start" ]
