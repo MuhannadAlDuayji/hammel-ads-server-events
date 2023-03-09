@@ -117,6 +117,8 @@ class EventController {
                 }
 
                 campaign.loads = updatedLoads;
+
+                // the problem now is that the load can have multiple loads with the same placement and device but for example one was marked as unvalid and a new one which is pending which one should we choose. we will need an adId to determine
                 await campaign.save();
             }
 
