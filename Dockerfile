@@ -1,19 +1,13 @@
-FROM node:14.15.4
+FROM node:latest
 
-# Set working directory
-WORKDIR /app
+WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+RUN npm install --production
 
-# Copy source code
 COPY . .
 
-# Expose port
-EXPOSE 3501
+EXPOSE 8080
 
-# Start the server
-CMD ["npm", "run", "dev"]
+CMD [ "npm", "start" ]
