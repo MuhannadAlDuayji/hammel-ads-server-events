@@ -27,10 +27,9 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.disable("x-powered-by");
 
 // routes
-app.use("/api/event", eventRoutes);
-app.use("/api/load", loadRoutes);
+app.use("/events/v1/event", eventRoutes);
+app.use("/events/v1/load", loadRoutes);
 
-// port
 const port: number = Number(process.env.PORT) || 3501;
 
 cron.schedule("0 * * * *", async () => {
