@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { EventType } from "./EventType";
 export default interface Event {
+    eventId: string;
     type: EventType;
     campaignId: string;
     // userId: string;
