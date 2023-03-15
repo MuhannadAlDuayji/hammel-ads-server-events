@@ -8,8 +8,9 @@ const router = express.Router();
 
 router.post(
     "/",
-    body("deviceID").notEmpty(),
-    body("placementID").notEmpty(),
+    body("deviceId").notEmpty(),
+    body("placementId").notEmpty(),
+    body("region").notEmpty(),
     LoadController.load
 );
 

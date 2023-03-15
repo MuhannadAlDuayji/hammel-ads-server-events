@@ -20,7 +20,7 @@ class LoadController {
                 });
             }
 
-            const { deviceID, placementID, region } = req.body;
+            const { deviceId, placementId, region } = req.body;
 
             // filter campaigns with show period startDate >= now >= endDate
 
@@ -30,6 +30,7 @@ class LoadController {
                 endDate: { $gte: now },
                 status: { $in: [CampaignStatus.READY, CampaignStatus.ACTIVE] },
             });
+            console.log(campaigns, "these are the campaigns");
 
             if (campaigns.length === 0)
                 return res.status(404).json({
@@ -60,7 +61,7 @@ class LoadController {
                     campaign.country === regionNames.of(region)
 
                     //  &&
-                    // !this.isViewedInPastDay(deviceID, campaign.loads)
+                    // !this.isViewedInPastDay(deviceId, campaign.loads)
                 );
             });
 
@@ -111,7 +112,7 @@ class LoadController {
             const selectedCampaign = this.pickRandomCampaign(campaignArray);
 
             selectedCampaign.loads.push(
-                this.newLoadObject(deviceID, placementID)
+                this.newLoadObject(deviceId, placementId)
             );
             await selectedCampaign.save();
 
@@ -135,12 +136,12 @@ class LoadController {
     };
 
     private static newLoadObject = (
-        deviceID: string,
-        placementID: string
+        deviceId: string,
+        placementId: string
     ): Load => {
         return {
-            deviceID,
-            placementID,
+            deviceId,
+            placementId,
             status: LoadStatus.PENDING,
             createdAt: new Date(Date.now()),
         };
@@ -160,16 +161,16 @@ class LoadController {
     };
 
     private static isViewedInPastDay = (
-        deviceID: string,
+        deviceId: string,
         loadArray: Array<Load>
     ): boolean => {
-        // pending or served in the last 24 hours load with that deviceID
+        // pending or served in the last 24 hours load with that deviceId
 
         const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
 
         return loadArray.some((load) => {
             return (
-                (load.deviceID === deviceID &&
+                (load.deviceId === deviceId &&
                     load.status === LoadStatus.PENDING) ||
                 (load.status === LoadStatus.SERVED &&
                     load.createdAt >= cutoffDate)

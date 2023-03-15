@@ -40,6 +40,7 @@ class EventController {
             // } = req.body;
 
             const {
+                eventId,
                 type,
                 campaignId,
                 deviceId,
@@ -63,6 +64,7 @@ class EventController {
             // }
 
             const event: Event = {
+                eventId,
                 type,
                 campaignId,
                 // userId,
@@ -109,8 +111,8 @@ class EventController {
                 for (const load of updatedLoads) {
                     console.log(load);
                     if (
-                        load.deviceID === deviceId &&
-                        load.placementID === placementId
+                        load.deviceId === deviceId &&
+                        load.placementId === placementId
                     ) {
                         load.status = LoadStatus.SERVED;
                     }
