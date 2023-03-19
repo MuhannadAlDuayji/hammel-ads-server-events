@@ -84,6 +84,9 @@ class EventController {
                     .json({ status: "error", message: "campaign not found" });
 
             campaign.events.push(event);
+            if (campaign.status === CampaignStatus.READY) {
+                campaign.status = CampaignStatus.ACTIVE;
+            }
 
             if (event.type === EventType.VIEW) {
                 const cost =
