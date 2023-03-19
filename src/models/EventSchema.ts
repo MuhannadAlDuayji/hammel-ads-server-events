@@ -3,6 +3,10 @@ import Event from "../types/event";
 import { EventType } from "../types/event/EventType";
 
 const eventSchema = new mongoose.Schema({
+    loadId: {
+        type: String,
+        required: true,
+    },
     type: {
         type: String,
         enum: Object.values(EventType),

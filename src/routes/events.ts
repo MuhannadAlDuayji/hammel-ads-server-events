@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post(
     "/",
-    body("eventId").notEmpty(),
+    body("loadId").notEmpty(),
     body("type").isIn(Object.values(EventType)),
     body("campaignId").notEmpty(),
     body("deviceId").notEmpty(),

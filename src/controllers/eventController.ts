@@ -40,7 +40,7 @@ class EventController {
             // } = req.body;
 
             const {
-                eventId,
+                loadId,
                 type,
                 campaignId,
                 deviceId,
@@ -64,7 +64,7 @@ class EventController {
             // }
 
             const event: Event = {
-                eventId,
+                loadId,
                 type,
                 campaignId,
                 // userId,
@@ -107,20 +107,16 @@ class EventController {
                     campaign.status = CampaignStatus.WAITINGFORFUNDS;
 
                 // make the load served
-                const updatedLoads = campaign.loads;
-                for (const load of updatedLoads) {
-                    console.log(load);
-                    if (
-                        load.deviceId === deviceId &&
-                        load.placementId === placementId
-                    ) {
-                        load.status = LoadStatus.SERVED;
+                campaign.loads = campaign.loads.map((load) => {
+                    if (load.id === event.loadId) {
+                        return {
+                            ...load,
+                            status: LoadStatus.SERVED,
+                        };
                     }
-                }
+                    return load;
+                });
 
-                campaign.loads = updatedLoads;
-
-                // the problem now is that the load can have multiple loads with the same placement and device but for example one was marked as unvalid and a new one which is pending which one should we choose. we will need an adId to determine
                 await campaign.save();
             }
 

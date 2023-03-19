@@ -46,12 +46,10 @@ class LoadController {
                     LoadStatus.SERVED,
                     campaign.loads
                 );
-
                 const pendingCount = this.calculateLoadStatus(
                     LoadStatus.PENDING,
                     campaign.loads
                 );
-
                 const totalCost =
                     ((servedCount + pendingCount) / 1000) *
                     Number(process.env.THOUSAND_VIEWS_COST);
@@ -100,7 +98,6 @@ class LoadController {
                 const diffInMs = endDate.getTime() - now.getTime(); // getTime() returns the timestamp in milliseconds
                 const remainingHours = diffInMs / (1000 * 60 * 60);
 
-                console.log(remainingHours); // Output: number of remaining hours between now and the end date of the campaign
                 const campaignNeeds = totalNeeds / remainingHours;
 
                 return {
@@ -110,15 +107,16 @@ class LoadController {
             });
 
             const selectedCampaign = this.pickRandomCampaign(campaignArray);
-
+            const loadId = this.generateLoadId();
             selectedCampaign.loads.push(
-                this.newLoadObject(deviceId, placementId)
+                this.newLoadObject(loadId, deviceId, placementId)
             );
             await selectedCampaign.save();
 
             res.status(200).json({
                 status: "success",
                 data: {
+                    loadId,
                     title: selectedCampaign.title,
                     url: selectedCampaign.link,
                     img: selectedCampaign.photoPath,
@@ -136,10 +134,12 @@ class LoadController {
     };
 
     private static newLoadObject = (
+        id: string,
         deviceId: string,
         placementId: string
     ): Load => {
         return {
+            id,
             deviceId,
             placementId,
             status: LoadStatus.PENDING,
@@ -199,6 +199,27 @@ class LoadController {
 
         // If no number was selected, return the last one
         return array[array.length - 1].campaign;
+    };
+
+    private static generateLoadId = () => {
+        const os = require("os");
+        const crypto = require("crypto");
+
+        const now: number = Number(new Date());
+        const secondInHex = Math.floor(now / 1000).toString(16);
+        const machineId = crypto
+            .createHash("md5")
+            .update(os.hostname())
+            .digest("hex")
+            .slice(0, 6);
+        const processId = process.pid.toString(16).slice(0, 4).padStart(4, "0");
+        const counter = process
+            .hrtime()[1]
+            .toString(16)
+            .slice(0, 6)
+            .padStart(6, "0");
+
+        return secondInHex + machineId + processId + counter;
     };
 }
 
