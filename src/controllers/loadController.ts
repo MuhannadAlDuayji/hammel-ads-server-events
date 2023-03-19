@@ -30,6 +30,7 @@ class LoadController {
                 endDate: { $gte: now },
                 status: { $in: [CampaignStatus.READY, CampaignStatus.ACTIVE] },
             });
+            console.log(campaigns, "these are the campaigns");
 
             if (campaigns.length === 0)
                 return res.status(404).json({
