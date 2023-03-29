@@ -56,10 +56,8 @@ class LoadController {
 
                 return (
                     totalCost <= campaign.budget * 1.1 &&
-                    campaign.country === regionNames.of(region)
-
-                    //  &&
-                    // !this.isViewedInPastDay(deviceId, campaign.loads)
+                    campaign.country === regionNames.of(region) &&
+                    !this.isViewedInPastDay(deviceId, campaign.loads)
                 );
             });
 

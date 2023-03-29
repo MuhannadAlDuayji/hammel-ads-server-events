@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-import UserPaymentMethodType from "../payment method";
+import UserPaymentMethodType from "../paymentmethod";
+import Transaction from "../transaction";
 import { UserType } from "./UserType";
 export default interface IUser extends mongoose.Document {
     _id: string;
@@ -9,6 +10,7 @@ export default interface IUser extends mongoose.Document {
     phoneNumber: string;
     password: string;
     photoPath: string | null;
+    preferredLanguage: string;
     isEmailConfirmed: Boolean;
     confirmationToken: string | null;
     resetToken: string | null;
@@ -18,7 +20,7 @@ export default interface IUser extends mongoose.Document {
     createdAt: Date;
     balance: number;
     paymentMethods: UserPaymentMethodType[];
-
+    transactions: Transaction[];
     generateAuthToken: () => string;
     generateConfirmationToken: () => string;
 }

@@ -6,5 +6,5 @@ export enum CampaignStatus {
     ENDED = "ended",
     STOPPED = "stopped",
     WAITINGFOREDIT = "waiting for edit",
-    WAITINGFORFUNDS = "wating for funds",
+    WAITINGFORFUNDS = "waiting for funds",
 }

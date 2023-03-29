@@ -28,17 +28,6 @@ class EventController {
                 });
             }
 
-            // const {
-            //     type,
-            //     campaignId,
-            //     userId,
-            //     deviceId,
-            //     placementId,
-            //     watchTimeStart,
-            //     watchTimeEnd,
-            //     watchTime,
-            // } = req.body;
-
             const {
                 loadId,
                 type,
