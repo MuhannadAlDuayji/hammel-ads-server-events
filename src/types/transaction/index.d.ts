@@ -8,4 +8,5 @@ export default interface Transaction {
     type: TransactionType;
     transactionAmount: number;
     paymentMethod: UserPaymentMethodType | null;
+    createdAt: Date;
 }
