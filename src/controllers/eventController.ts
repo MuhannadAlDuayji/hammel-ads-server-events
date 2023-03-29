@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
 import campaignSchema from "../models/CampaignSchema";
-import eventSchema from "../models/EventSchema";
 import userSchema from "../models/UserSchema";
 
 import { ValidationError, ValidationResult } from "../types/validation";
 
-import crypto from "crypto";
 import { validationResult } from "express-validator";
 import { isValidObjectId } from "mongoose";
 import Event from "../types/event";
@@ -45,18 +43,11 @@ class EventController {
                     message: "invalid campaignId",
                 });
             }
-            // if (!isValidObjectId(userId)) {
-            //     return res.status(400).json({
-            //         status: "error",
-            //         message: "invalid userId",
-            //     });
-            // }
 
             const event: Event = {
                 loadId,
                 type,
                 campaignId,
-                // userId,
                 deviceId,
                 placementId,
                 watchTimeStart,
@@ -147,7 +138,6 @@ class EventController {
             } else {
                 user.balance -= cost;
             }
-            console.log(user.balance);
 
             await user.save();
             return user.balance;

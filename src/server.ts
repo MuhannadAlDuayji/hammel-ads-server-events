@@ -34,8 +34,6 @@ const port: number = Number(process.env.PORT) || 3501;
 
 cron.schedule("0 * * * *", async () => {
     try {
-        console.log("cron job");
-
         // Get all campaigns from the database
         const campaigns = await CampaignSchema.find();
 
