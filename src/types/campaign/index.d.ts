@@ -6,7 +6,6 @@ export default interface Campaign {
     title: string;
     startDate: Date;
     endDate: Date;
-
     budget: number;
     country: string;
     photoPath: string;
