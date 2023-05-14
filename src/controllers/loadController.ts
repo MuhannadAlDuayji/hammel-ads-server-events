@@ -163,14 +163,15 @@ class LoadController {
     ): boolean => {
         // pending or served in the last 24 hours load with that deviceId
 
-        const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
+        // const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
+        const cutoffDate = new Date(Date.now() - 3 * 60 * 1000); // 3 minutes ago
 
         return loadArray.some((load) => {
             return (
-                (load.deviceId === deviceId &&
-                    load.status === LoadStatus.PENDING) ||
-                (load.status === LoadStatus.SERVED &&
-                    load.createdAt >= cutoffDate)
+                load.deviceId === deviceId &&
+                load.createdAt >= cutoffDate &&
+                (load.status === LoadStatus.PENDING ||
+                    load.status === LoadStatus.SERVED)
             );
         });
     };
