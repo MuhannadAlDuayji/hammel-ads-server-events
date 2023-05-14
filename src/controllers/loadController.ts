@@ -105,10 +105,23 @@ class LoadController {
 
             const selectedCampaign = this.pickRandomCampaign(campaignArray);
             const loadId = this.generateLoadId();
-            selectedCampaign.loads.push(
-                this.newLoadObject(loadId, deviceId, placementId)
+            // selectedCampaign.loads.push(
+            //     this.newLoadObject(loadId, deviceId, placementId)
+            // );
+            // await selectedCampaign.save();
+            const updatedCampaign = await Campaign.findOneAndUpdate(
+                { _id: selectedCampaign._id },
+                {
+                    $push: {
+                        loads: this.newLoadObject(
+                            loadId,
+                            deviceId,
+                            placementId
+                        ),
+                    },
+                },
+                { new: true }
             );
-            await selectedCampaign.save();
 
             res.status(200).json({
                 status: "success",

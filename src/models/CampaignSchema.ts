@@ -53,7 +53,7 @@ const campaignSchema = new mongoose.Schema({
     },
     clickRate: {
         type: Number,
-        default: null,
+        default: 0,
     },
     views: {
         type: Number,

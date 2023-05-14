@@ -19,6 +19,7 @@ class EventController {
             ) as unknown as ValidationResult;
             const errors: ValidationError[] =
                 (validationResults?.errors as ValidationError[]) || [];
+
             if (errors.length > 0) {
                 return res.status(400).json({
                     status: "error",
@@ -26,6 +27,7 @@ class EventController {
                 });
             }
 
+            // Extract the event data from the request body
             const {
                 loadId,
                 type,
@@ -56,63 +58,39 @@ class EventController {
                 createdAt: new Date(Date.now()),
             };
 
-            const campaign = await campaignSchema.findById(campaignId);
+            // Find the campaign by id and update it with the new event data
+            const updatedCampaign = await campaignSchema.findByIdAndUpdate(
+                campaignId,
+                {
+                    $push: { events: event },
+                    $set: { status: CampaignStatus.ACTIVE },
+                    $inc: {
+                        clicks: event.type === EventType.CLICK ? 1 : 0,
+                        views: event.type === EventType.VIEW ? 1 : 0,
+                        moneySpent:
+                            event.type === EventType.VIEW
+                                ? (Number(process.env.THOUSAND_VIEWS_COST) ||
+                                      1) / 1000
+                                : 0,
+                        clickRate: event.type === EventType.CLICK ? 1 : 0,
+                    },
+                    $setOnInsert: {
+                        userId: "", // Set the userId if you want to insert it
+                        budget: 0, // Set the budget if you want to insert it
+                        loads: [], // Set the loads if you want to insert it
+                    },
+                },
+                { new: true } // Return the updated document instead of the old one
+            );
 
-            if (!campaign)
-                return res
-                    .status(404)
-                    .json({ status: "error", message: "campaign not found" });
-
-            campaign.events.push(event);
-            if (campaign.status === CampaignStatus.READY) {
-                campaign.status = CampaignStatus.ACTIVE;
-            }
-
-            if (event.type === EventType.VIEW) {
-                const cost =
-                    (Number(process.env.THOUSAND_VIEWS_COST) || 1) / 1000;
-
-                const currentBalance: number | null = await this.chargeUser(
-                    campaign.userId,
-                    cost
-                );
-                if (currentBalance === null)
-                    return res.status(500).json({
-                        status: "error",
-                        message: "internal server error",
-                    });
-                campaign.moneySpent += cost;
-                campaign.views = (campaign.views as number) + 1;
-
-                if (campaign.moneySpent >= campaign.budget)
-                    campaign.status = CampaignStatus.ENDED;
-                if (cost > currentBalance)
-                    campaign.status = CampaignStatus.WAITINGFORFUNDS;
-
-                // make the load served
-                campaign.loads = campaign.loads.map((load) => {
-                    if (load.id === event.loadId) {
-                        return {
-                            ...load,
-                            status: LoadStatus.SERVED,
-                        };
-                    }
-                    return load;
+            if (!updatedCampaign) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "campaign not found",
                 });
-
-                await campaign.save();
             }
 
-            if (event.type === EventType.CLICK) {
-                campaign.clicks = (campaign.clicks as number) + 1;
-            }
-
-            campaign.clickRate =
-                ((campaign.clicks as number) / (campaign.views as number)) *
-                100;
-
-            await campaign.save();
-
+            // Same as before
             return res.status(200).json({
                 status: "success",
                 message: "event saved",
