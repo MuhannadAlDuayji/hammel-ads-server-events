@@ -7,9 +7,14 @@ import { ValidationError, ValidationResult } from "../types/validation";
 import { validationResult } from "express-validator";
 import { isValidObjectId } from "mongoose";
 import Event from "../types/event";
-import { EventType } from "../types/event/EventType";
-import { CampaignStatus } from "../types/campaign/CampaignStatus";
-import { LoadStatus } from "../types/load/LoadStatus";
+import EventSchema from "../models/EventSchema";
+import { EventTypeId, EventTypeName } from "../types/event/EventType";
+import {
+    CampaignStatusId,
+    CampaignStatusName,
+} from "../types/campaign/CampaignStatus";
+import Load from "../models/LoadSchema";
+import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
 
 class EventController {
     static save = async (req: Request, res: Response) => {
@@ -46,9 +51,52 @@ class EventController {
                 });
             }
 
+            const campaign = await campaignSchema.countDocuments({
+                _id: campaignId,
+            });
+            if (!campaign) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "campaign not found",
+                });
+            }
+
+            const load = await Load.countDocuments({ _id: loadId });
+            if (!load) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "load not found",
+                });
+            }
+
+            // Map the type string to the corresponding eventTypeName and eventTypeId
+            let eventTypeName, eventTypeId;
+
+            switch (type.toLowerCase()) {
+                case EventTypeName.VIEW:
+                    eventTypeName = EventTypeName.VIEW;
+                    eventTypeId = EventTypeId.VIEW;
+                    break;
+                case EventTypeName.CLICK:
+                    eventTypeName = EventTypeName.CLICK;
+                    eventTypeId = EventTypeId.CLICK;
+                    break;
+                case EventTypeName.CLOSE:
+                    eventTypeName = EventTypeName.CLOSE;
+                    eventTypeId = EventTypeId.CLOSE;
+                    break;
+                default:
+                    // Handle the case when an invalid type is provided
+                    return res.status(400).json({
+                        status: "error",
+                        message: "Invalid type",
+                    });
+            }
+
             const event: Event = {
                 loadId,
-                type,
+                eventTypeId,
+                eventTypeName,
                 campaignId,
                 deviceId,
                 placementId,
@@ -58,35 +106,69 @@ class EventController {
                 createdAt: new Date(Date.now()),
             };
 
+            const newEvent = new EventSchema(event);
+            newEvent.save();
+
             // Find the campaign by id and update it with the new event data
             const updatedCampaign = await campaignSchema.findByIdAndUpdate(
                 campaignId,
                 {
-                    $push: { events: event },
-                    $set: { status: CampaignStatus.ACTIVE },
+                    $set: {
+                        campaignStatusName: CampaignStatusName.ACTIVE,
+                        campaignStatusId: CampaignStatusId.ACTIVE,
+                    },
                     $inc: {
-                        clicks: event.type === EventType.CLICK ? 1 : 0,
-                        views: event.type === EventType.VIEW ? 1 : 0,
+                        clicks: event.eventTypeId === EventTypeId.CLICK ? 1 : 0,
+                        views: event.eventTypeId === EventTypeId.VIEW ? 1 : 0,
                         moneySpent:
-                            event.type === EventType.VIEW
+                            event.eventTypeId === EventTypeId.VIEW
                                 ? (Number(process.env.THOUSAND_VIEWS_COST) ||
                                       1) / 1000
                                 : 0,
-                        clickRate: event.type === EventType.CLICK ? 1 : 0,
-                    },
-                    $setOnInsert: {
-                        userId: "", // Set the userId if you want to insert it
-                        budget: 0, // Set the budget if you want to insert it
-                        loads: [], // Set the loads if you want to insert it
                     },
                 },
-                { new: true } // Return the updated document instead of the old one
+                { new: true }
             );
 
             if (!updatedCampaign) {
-                return res.status(404).json({
+                return res.status(500).json({
                     status: "error",
-                    message: "campaign not found",
+                    message: "internal server error",
+                });
+            }
+
+            if (newEvent.eventTypeId === EventTypeId.VIEW) {
+                const cost =
+                    (Number(process.env.THOUSAND_VIEWS_COST) || 1) / 1000;
+                const currentBalance: number | null = await this.chargeUser(
+                    updatedCampaign.userId,
+                    cost
+                );
+                if (currentBalance === null) {
+                    return res.status(500).json({
+                        status: "error",
+                        message: "internal server error",
+                    });
+                }
+
+                if (updatedCampaign.moneySpent >= updatedCampaign.budget) {
+                    // make status ended
+                    await updatedCampaign.update({
+                        campaignStatusName: CampaignStatusName.ENDED,
+                        campaignStatusId: CampaignStatusId.ENDED,
+                    });
+                } else if (cost > currentBalance) {
+                    // status waiting for funds
+                    await updatedCampaign.update({
+                        campaignStatusName: CampaignStatusName.WAITINGFORFUNDS,
+                        campaignStatusId: CampaignStatusId.WAITINGFORFUNDS,
+                    });
+                }
+
+                // make the load served
+                await Load.findByIdAndUpdate(loadId, {
+                    loadStatusId: LoadStatusId.SERVED,
+                    loadStatusName: LoadStatusName.SERVED,
                 });
             }
 
@@ -94,7 +176,7 @@ class EventController {
             return res.status(200).json({
                 status: "success",
                 message: "event saved",
-                event,
+                newEvent,
             });
         } catch (err: any) {
             console.log(err);

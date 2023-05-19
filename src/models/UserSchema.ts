@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema({
         type: Array<UserPaymentMethodType>,
         default: [],
     },
+    createdAt: {
+        type: Date,
+        default: new Date(Date.now()),
+    },
 });
 const User = mongoose.model<IUser>("User", userSchema);
 

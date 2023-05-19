@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
 import { ValidationError, ValidationResult } from "../types/validation";
 import { validationResult } from "express-validator";
-import { CampaignStatus } from "../types/campaign/CampaignStatus";
+import { CampaignStatusId } from "../types/campaign/CampaignStatus";
 import Campaign from "../models/CampaignSchema";
 import Load from "../types/load";
-import { LoadStatus } from "../types/load/LoadStatus";
+import loadSchema from "../models/LoadSchema";
+import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
+import LoadSchema from "../models/LoadSchema";
+
 class LoadController {
     static load = async (req: Request, res: Response) => {
         try {
@@ -28,7 +31,9 @@ class LoadController {
             const campaigns = await Campaign.find({
                 startDate: { $lte: now },
                 endDate: { $gte: now },
-                status: { $in: [CampaignStatus.READY, CampaignStatus.ACTIVE] },
+                campaignStatusId: {
+                    $in: [CampaignStatusId.READY, CampaignStatusId.ACTIVE],
+                },
             });
 
             if (campaigns.length === 0)
@@ -40,25 +45,58 @@ class LoadController {
             let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
             // removing campaigns that the (served loads + pending loads)*price > budget
-            let filteredCampaigns = campaigns.filter((campaign) => {
-                const servedCount = this.calculateLoadStatus(
-                    LoadStatus.SERVED,
-                    campaign.loads
-                );
-                const pendingCount = this.calculateLoadStatus(
-                    LoadStatus.PENDING,
-                    campaign.loads
-                );
-                const totalCost =
-                    ((servedCount + pendingCount) / 1000) *
-                    Number(process.env.THOUSAND_VIEWS_COST);
+            let filteredCampaigns = await Promise.all(
+                campaigns.map(async (campaign) => {
+                    const servedCountPromise = loadSchema.countDocuments({
+                        loadStatusId: LoadStatusId.SERVED,
+                    });
 
-                return (
-                    totalCost <= campaign.budget * 1.1 &&
-                    campaign.country === regionNames.of(region) &&
-                    !this.isViewedInPastDay(deviceId, campaign.loads)
-                );
-            });
+                    const pendingCountPromise = loadSchema.countDocuments({
+                        loadStatusId: LoadStatusId.PENDING,
+                    });
+
+                    const [servedCount, pendingCount] = await Promise.all([
+                        servedCountPromise,
+                        pendingCountPromise,
+                    ]);
+
+                    const totalCost =
+                        ((servedCount + pendingCount) / 1000) *
+                        Number(process.env.THOUSAND_VIEWS_COST);
+
+                    const cutoffDate = new Date(
+                        Date.now() - 24 * 60 * 60 * 1000
+                    );
+                    const viewedInPastDayPromise =
+                        await loadSchema.countDocuments({
+                            deviceId: deviceId,
+                            loadStatusId: {
+                                $in: [
+                                    LoadStatusId.PENDING,
+                                    LoadStatusId.SERVED,
+                                ],
+                            },
+                            createdAt: { $gte: cutoffDate },
+                        });
+                    console.log(viewedInPastDayPromise);
+
+                    const viewedInPastDay = viewedInPastDayPromise > 0;
+
+                    if (
+                        totalCost <= campaign.budget * 1.1 &&
+                        campaign.country === regionNames.of(region) &&
+                        !viewedInPastDay
+                    ) {
+                        return campaign;
+                    }
+
+                    return null;
+                })
+            );
+
+            filteredCampaigns = filteredCampaigns.filter(
+                (campaign) => campaign !== null
+            );
 
             if (filteredCampaigns.length === 0)
                 return res.status(404).json({
@@ -68,71 +106,58 @@ class LoadController {
 
             // calculate campaigns serve needs
 
-            const campaignArray = filteredCampaigns.map((campaign: any) => {
-                const servedCount = this.calculateLoadStatus(
-                    LoadStatus.SERVED,
-                    campaign.loads
-                );
+            const campaignArray = await Promise.all(
+                filteredCampaigns.map(async (campaign: any) => {
+                    const servedCountPromise = loadSchema.countDocuments({
+                        loadStatusId: LoadStatusId.SERVED,
+                    });
 
-                const pendingCount = this.calculateLoadStatus(
-                    LoadStatus.PENDING,
-                    campaign.loads
-                );
+                    const pendingCountPromise = loadSchema.countDocuments({
+                        loadStatusId: LoadStatusId.PENDING,
+                    });
 
-                let totalNeeds =
-                    (campaign.budget /
-                        Number(process.env.THOUSAND_VIEWS_COST)) *
-                        1000 -
-                    servedCount -
-                    pendingCount;
+                    const [servedCount, pendingCount] = await Promise.all([
+                        servedCountPromise,
+                        pendingCountPromise,
+                    ]);
 
-                if (totalNeeds < 0) totalNeeds = 0;
+                    let totalNeeds =
+                        (campaign.budget /
+                            Number(process.env.THOUSAND_VIEWS_COST)) *
+                            1000 -
+                        servedCount -
+                        pendingCount;
 
-                const endDate = new Date(campaign.endDate);
+                    if (totalNeeds < 0) totalNeeds = 0;
 
-                // Calculate the remaining hours between now and the end date of the campaign
-                const now = new Date();
-                const diffInMs = endDate.getTime() - now.getTime(); // getTime() returns the timestamp in milliseconds
-                const remainingHours = diffInMs / (1000 * 60 * 60);
+                    const endDate = new Date(campaign.endDate);
 
-                const campaignNeeds = totalNeeds / remainingHours;
+                    const now = new Date();
+                    const diffInMs = endDate.getTime() - now.getTime();
+                    const remainingHours = diffInMs / (1000 * 60 * 60);
 
-                return {
-                    campaign,
-                    campaignNeeds,
-                };
-            });
+                    const campaignNeeds = totalNeeds / remainingHours;
 
-            const selectedCampaign = this.pickRandomCampaign(campaignArray);
-            const loadId = this.generateLoadId();
-            // selectedCampaign.loads.push(
-            //     this.newLoadObject(loadId, deviceId, placementId)
-            // );
-            // await selectedCampaign.save();
-            const updatedCampaign = await Campaign.findOneAndUpdate(
-                { _id: selectedCampaign._id },
-                {
-                    $push: {
-                        loads: this.newLoadObject(
-                            loadId,
-                            deviceId,
-                            placementId
-                        ),
-                    },
-                },
-                { new: true }
+                    return {
+                        campaign,
+                        campaignNeeds,
+                    };
+                })
             );
 
+            const selectedCampaign = this.pickRandomCampaign(campaignArray);
+
+            const newLoad = new loadSchema({
+                campaignId: selectedCampaign._id,
+                deviceId,
+                placementId,
+                loadStatusId: LoadStatusId.PENDING,
+                loadStatusName: LoadStatusName.PENDING,
+            });
+            await newLoad.save();
             res.status(200).json({
                 status: "success",
-                data: {
-                    loadId,
-                    title: selectedCampaign.title,
-                    url: selectedCampaign.link,
-                    img: selectedCampaign.photoPath,
-                    userId: selectedCampaign.userId,
-                    campaignId: selectedCampaign._id,
-                },
+                data: selectedCampaign,
             });
         } catch (err: any) {
             console.log(err);
@@ -141,52 +166,6 @@ class LoadController {
                 message: "internal server error",
             });
         }
-    };
-
-    private static newLoadObject = (
-        id: string,
-        deviceId: string,
-        placementId: string
-    ): Load => {
-        return {
-            id,
-            deviceId,
-            placementId,
-            status: LoadStatus.PENDING,
-            createdAt: new Date(Date.now()),
-        };
-    };
-
-    private static calculateLoadStatus = (
-        status: LoadStatus,
-        loadArray: Array<Load>
-    ): number => {
-        let count = 0;
-
-        loadArray.forEach((load: Load) => {
-            if (load.status === status) count += 1;
-        });
-
-        return count;
-    };
-
-    private static isViewedInPastDay = (
-        deviceId: string,
-        loadArray: Array<Load>
-    ): boolean => {
-        // pending or served in the last 24 hours load with that deviceId
-
-        // const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
-        const cutoffDate = new Date(Date.now() - 3 * 60 * 1000); // 3 minutes ago
-
-        return loadArray.some((load) => {
-            return (
-                load.deviceId === deviceId &&
-                load.createdAt >= cutoffDate &&
-                (load.status === LoadStatus.PENDING ||
-                    load.status === LoadStatus.SERVED)
-            );
-        });
     };
 
     private static pickRandomCampaign = (array: any) => {
@@ -210,27 +189,6 @@ class LoadController {
 
         // If no number was selected, return the last one
         return array[array.length - 1].campaign;
-    };
-
-    private static generateLoadId = () => {
-        const os = require("os");
-        const crypto = require("crypto");
-
-        const now: number = Number(new Date());
-        const secondInHex = Math.floor(now / 1000).toString(16);
-        const machineId = crypto
-            .createHash("md5")
-            .update(os.hostname())
-            .digest("hex")
-            .slice(0, 6);
-        const processId = process.pid.toString(16).slice(0, 4).padStart(4, "0");
-        const counter = process
-            .hrtime()[1]
-            .toString(16)
-            .slice(0, 6)
-            .padStart(6, "0");
-
-        return secondInHex + machineId + processId + counter;
     };
 }
 

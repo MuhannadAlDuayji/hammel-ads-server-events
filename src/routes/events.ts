@@ -1,14 +1,14 @@
 import express from "express";
 import { body } from "express-validator";
 import EventController from "../controllers/eventController";
-import { EventType } from "../types/event/EventType";
+import { EventTypeName } from "../types/event/EventType";
 
 const router = express.Router();
 
 router.post(
     "/",
     body("loadId").notEmpty(),
-    body("type").isIn(Object.values(EventType)),
+    body("type").isIn(Object.values(EventTypeName)),
     body("campaignId").notEmpty(),
     body("deviceId").notEmpty(),
     body("placementId").notEmpty(),

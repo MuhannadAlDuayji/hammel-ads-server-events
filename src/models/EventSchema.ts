@@ -1,25 +1,30 @@
 import * as mongoose from "mongoose";
 import Event from "../types/event";
-import { EventType } from "../types/event/EventType";
+import { EventTypeId, EventTypeName } from "../types/event/EventType";
 
 const eventSchema = new mongoose.Schema({
     loadId: {
         type: String,
         required: true,
     },
-    type: {
+    eventTypeName: {
         type: String,
-        enum: Object.values(EventType),
+        enum: Object.values(EventTypeName),
+        required: true,
+    },
+    eventTypeId: {
+        type: Number,
+        enum: [1, 2, 3],
         required: true,
     },
     campaignId: {
         type: String,
         required: true,
     },
-    userId: {
-        type: String,
-        required: true,
-    },
+    // userId: {
+    //     type: String,
+    //     required: true,
+    // },
     deviceId: {
         type: String,
         required: true,
@@ -39,6 +44,10 @@ const eventSchema = new mongoose.Schema({
     watchTime: {
         type: Number,
         default: null,
+    },
+    createdAt: {
+        type: Date,
+        default: new Date(Date.now()),
     },
 });
 

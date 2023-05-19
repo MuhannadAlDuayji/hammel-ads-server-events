@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
-import { LoadStatus } from "./LoadStatus";
+import { LoadStatusId, LoadStatusName } from "./LoadStatus";
 export default interface Load {
-    id: string;
+    _id: string;
     deviceId: string;
     placementId: string;
-    status: LoadStatus;
+    loadStatusId: LoadStatusId;
+    loadStatusName: LoadStatusName;
+    campaignId: string;
     createdAt: Date;
 }

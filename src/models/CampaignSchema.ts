@@ -1,8 +1,9 @@
 import * as mongoose from "mongoose";
-import { CampaignStatus } from "../types/campaign/CampaignStatus";
+import {
+    CampaignStatusId,
+    CampaignStatusName,
+} from "../types/campaign/CampaignStatus";
 import Campaign from "../types/campaign";
-import Event from "../types/event";
-import Load from "../types/load";
 
 const campaignSchema = new mongoose.Schema({
     title: {
@@ -34,9 +35,14 @@ const campaignSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    status: {
+    campaignStatusName: {
         type: String,
-        enum: Object.values(CampaignStatus),
+        enum: Object.values(CampaignStatusName),
+        required: true,
+    },
+    campaignStatusId: {
+        type: Number,
+        enum: [1, 2, 3, 4, 5, 6, 7, 8],
         required: true,
     },
     userId: {
@@ -45,13 +51,9 @@ const campaignSchema = new mongoose.Schema({
     },
     createdAt: {
         type: Date,
-        default: Date.now,
+        default: new Date(Date.now()),
     },
     clicks: {
-        type: Number,
-        default: 0,
-    },
-    clickRate: {
         type: Number,
         default: 0,
     },
@@ -66,14 +68,6 @@ const campaignSchema = new mongoose.Schema({
     adminMessage: {
         type: String,
         default: null,
-    },
-    events: {
-        type: Array<Event>,
-        default: [],
-    },
-    loads: {
-        type: Array<Load>,
-        default: [],
     },
 });
 

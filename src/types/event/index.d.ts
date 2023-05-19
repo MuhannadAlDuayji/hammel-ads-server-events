@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
-import { EventType } from "./EventType";
+import { EventTypeId, EventTypeName } from "./EventType";
 export default interface Event {
     loadId: string;
-    type: EventType;
+    eventTypeName: EventTypeName;
+    eventTypeId: EventTypeId;
     campaignId: string;
     // userId: string;
-    deviceId: number;
+    deviceId: string;
     placementId: string;
     watchTimeStart: number | null;
     watchTimeEnd: number | null;
