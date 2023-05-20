@@ -15,12 +15,15 @@ export default interface IUser extends mongoose.Document {
     confirmationToken: string | null;
     resetToken: string | null;
     resetTokenExpiration: Date | null;
-    userType: UserType;
+    userTypeName: string;
+    userTypeId: number;
     userId: string;
     createdAt: Date;
     balance: number;
     paymentMethods: UserPaymentMethodType[];
     transactions: Transaction[];
+    totalAmountCharged: number;
+    bonusAdded: boolean;
     generateAuthToken: () => string;
     generateConfirmationToken: () => string;
 }

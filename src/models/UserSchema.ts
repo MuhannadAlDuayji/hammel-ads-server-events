@@ -1,6 +1,6 @@
 import * as mongoose from "mongoose";
 import IUser from "../types/user";
-import { UserType } from "../types/user/UserType";
+import { UserTypeId, UserTypeName } from "../types/user/UserType";
 import crypto from "crypto";
 import UserPaymentMethodType from "../types/paymentmethod";
 
@@ -11,10 +11,16 @@ const userSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     photoPath: { type: String, default: null },
-    userType: {
+    userTypeName: {
         type: String,
-        default: UserType.User,
-        enum: Object.values(UserType),
+        default: "User",
+        enum: Object.values(UserTypeName),
+    },
+    userTypeId: {
+        type: Number,
+        default: 1,
+        enum: [1, 2],
+        index: true,
     },
     isEmailConfirmed: {
         type: Boolean,

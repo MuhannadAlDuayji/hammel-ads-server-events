@@ -78,7 +78,6 @@ class LoadController {
                             },
                             createdAt: { $gte: cutoffDate },
                         });
-                    console.log(viewedInPastDayPromise);
 
                     const viewedInPastDay = viewedInPastDayPromise > 0;
 
@@ -87,7 +86,7 @@ class LoadController {
                         campaign.country === regionNames.of(region) &&
                         !viewedInPastDay
                     ) {
-                        return campaign;
+                        return { campaign, servedCount, pendingCount };
                     }
 
                     return null;
@@ -107,30 +106,17 @@ class LoadController {
             // calculate campaigns serve needs
 
             const campaignArray = await Promise.all(
-                filteredCampaigns.map(async (campaign: any) => {
-                    const servedCountPromise = loadSchema.countDocuments({
-                        loadStatusId: LoadStatusId.SERVED,
-                    });
-
-                    const pendingCountPromise = loadSchema.countDocuments({
-                        loadStatusId: LoadStatusId.PENDING,
-                    });
-
-                    const [servedCount, pendingCount] = await Promise.all([
-                        servedCountPromise,
-                        pendingCountPromise,
-                    ]);
-
+                filteredCampaigns.map(async (campaignInfo: any) => {
                     let totalNeeds =
-                        (campaign.budget /
+                        (campaignInfo.campaign.budget /
                             Number(process.env.THOUSAND_VIEWS_COST)) *
                             1000 -
-                        servedCount -
-                        pendingCount;
+                        campaignInfo.servedCount -
+                        campaignInfo.pendingCount;
 
                     if (totalNeeds < 0) totalNeeds = 0;
 
-                    const endDate = new Date(campaign.endDate);
+                    const endDate = new Date(campaignInfo.campaign.endDate);
 
                     const now = new Date();
                     const diffInMs = endDate.getTime() - now.getTime();
@@ -139,14 +125,12 @@ class LoadController {
                     const campaignNeeds = totalNeeds / remainingHours;
 
                     return {
-                        campaign,
+                        campaign: campaignInfo.campaign,
                         campaignNeeds,
                     };
                 })
             );
-
             const selectedCampaign = this.pickRandomCampaign(campaignArray);
-
             const newLoad = new loadSchema({
                 campaignId: selectedCampaign._id,
                 deviceId,
