@@ -9,7 +9,6 @@ router.post(
     "/",
     body("loadId").notEmpty(),
     body("type").isIn(Object.values(EventTypeName)),
-    body("campaignId").notEmpty(),
     body("deviceId").notEmpty(),
     body("placementId").notEmpty(),
     EventController.save
