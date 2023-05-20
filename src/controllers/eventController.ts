@@ -36,6 +36,7 @@ class EventController {
             const {
                 loadId,
                 type,
+                userId,
                 deviceId,
                 placementId,
                 watchTimeStart,
@@ -43,11 +44,26 @@ class EventController {
                 watchTime,
             } = req.body;
 
+            if (!isValidObjectId(loadId) || !isValidObjectId(userId)) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "invalid object Ids provided",
+                });
+            }
+
             const load = await Load.findById(loadId);
             if (!load) {
                 return res.status(404).json({
                     status: "error",
                     message: "load not found",
+                });
+            }
+
+            const user = await userSchema.findById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "user not found",
                 });
             }
 
@@ -80,6 +96,7 @@ class EventController {
                 eventTypeId,
                 eventTypeName,
                 campaignId: load.campaignId,
+                userId: userId,
                 deviceId,
                 placementId,
                 watchTimeStart,
