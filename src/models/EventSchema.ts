@@ -16,6 +16,7 @@ const eventSchema = new mongoose.Schema({
         type: Number,
         enum: [1, 2, 3],
         required: true,
+        index: true,
     },
     campaignId: {
         type: String,

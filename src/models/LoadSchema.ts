@@ -7,6 +7,7 @@ const loadSchema = new mongoose.Schema({
     deviceId: {
         type: String,
         required: true,
+        index: true,
     },
     placementId: {
         type: String,
@@ -21,6 +22,7 @@ const loadSchema = new mongoose.Schema({
         type: Number,
         enum: [1, 2, 3],
         required: true,
+        index: true,
     },
     campaignId: {
         type: String,
