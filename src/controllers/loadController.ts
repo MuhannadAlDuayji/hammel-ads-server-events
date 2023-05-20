@@ -155,9 +155,16 @@ class LoadController {
                 loadStatusName: LoadStatusName.PENDING,
             });
             await newLoad.save();
+
             res.status(200).json({
                 status: "success",
-                data: selectedCampaign,
+                data: {
+                    loadId: newLoad._id,
+                    url: selectedCampaign.link,
+                    img: selectedCampaign.photoPath,
+                    userId: selectedCampaign.userId,
+                    campaignId: selectedCampaign._id,
+                },
             });
         } catch (err: any) {
             console.log(err);

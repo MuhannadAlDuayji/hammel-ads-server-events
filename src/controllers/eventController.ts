@@ -175,7 +175,6 @@ class EventController {
             return res.status(200).json({
                 status: "success",
                 message: "event saved",
-                newEvent,
             });
         } catch (err: any) {
             console.log(err);
