@@ -20,6 +20,7 @@ const eventSchema = new mongoose.Schema({
     campaignId: {
         type: String,
         required: true,
+        index: true,
     },
     userId: {
         type: String,
