@@ -36,7 +36,6 @@ class EventController {
             const {
                 loadId,
                 type,
-                campaignId,
                 deviceId,
                 placementId,
                 watchTimeStart,
@@ -44,24 +43,7 @@ class EventController {
                 watchTime,
             } = req.body;
 
-            if (!isValidObjectId(campaignId)) {
-                return res.status(400).json({
-                    status: "error",
-                    message: "invalid campaignId",
-                });
-            }
-
-            const campaign = await campaignSchema.countDocuments({
-                _id: campaignId,
-            });
-            if (!campaign) {
-                return res.status(404).json({
-                    status: "error",
-                    message: "campaign not found",
-                });
-            }
-
-            const load = await Load.countDocuments({ _id: loadId });
+            const load = await Load.findById(loadId);
             if (!load) {
                 return res.status(404).json({
                     status: "error",
@@ -97,7 +79,7 @@ class EventController {
                 loadId,
                 eventTypeId,
                 eventTypeName,
-                campaignId,
+                campaignId: load.campaignId,
                 deviceId,
                 placementId,
                 watchTimeStart,
@@ -111,7 +93,7 @@ class EventController {
 
             // Find the campaign by id and update it with the new event data
             const updatedCampaign = await campaignSchema.findByIdAndUpdate(
-                campaignId,
+                load.campaignId,
                 {
                     $set: {
                         campaignStatusName: CampaignStatusName.ACTIVE,
@@ -166,7 +148,7 @@ class EventController {
                 }
 
                 // make the load served
-                await Load.findByIdAndUpdate(loadId, {
+                await load.update({
                     loadStatusId: LoadStatusId.SERVED,
                     loadStatusName: LoadStatusName.SERVED,
                 });
