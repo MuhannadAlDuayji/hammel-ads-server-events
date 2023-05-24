@@ -11,6 +11,12 @@ import LoadSchema from "../models/LoadSchema";
 class LoadController {
     static load = async (req: Request, res: Response) => {
         try {
+            
+            return res.status(400).json({
+                status: "error",
+                message: `invalid request`,
+            });
+
             const validationResults = validationResult(
                 req
             ) as unknown as ValidationResult;
