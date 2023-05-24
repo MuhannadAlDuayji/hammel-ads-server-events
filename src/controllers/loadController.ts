@@ -67,19 +67,19 @@ class LoadController {
                     const cutoffDate = new Date(
                         Date.now() - 24 * 60 * 60 * 1000
                     );
-                    const viewedInPastDayPromise =
-                        await loadSchema.countDocuments({
-                            deviceId: deviceId,
-                            loadStatusId: {
-                                $in: [
-                                    LoadStatusId.PENDING,
-                                    LoadStatusId.SERVED,
-                                ],
-                            },
-                            createdAt: { $gte: cutoffDate },
-                        });
+                    // const viewedInPastDayPromise =
+                    //     await loadSchema.countDocuments({
+                    //         deviceId: deviceId,
+                    //         loadStatusId: {
+                    //             $in: [
+                    //                 LoadStatusId.PENDING,
+                    //                 LoadStatusId.SERVED,
+                    //             ],
+                    //         },
+                    //         createdAt: { $gte: cutoffDate },
+                    //     });
 
-                    const viewedInPastDay = viewedInPastDayPromise > 0;
+                    const viewedInPastDay = false//viewedInPastDayPromise > 0;
 
                     if (
                         totalCost <= campaign.budget * 1.1 &&
