@@ -19,6 +19,13 @@ import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
 class EventController {
     static save = async (req: Request, res: Response) => {
         try {
+
+
+            return res.status(400).json({
+                status: "error",
+                message: `invalid request`,
+            });
+
             const validationResults = validationResult(
                 req
             ) as unknown as ValidationResult;
