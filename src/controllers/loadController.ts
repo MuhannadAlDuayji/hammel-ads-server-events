@@ -11,11 +11,6 @@ import LoadSchema from "../models/LoadSchema";
 class LoadController {
     static load = async (req: Request, res: Response) => {
         try {
-            
-            return res.status(400).json({
-                status: "error",
-                message: `invalid request`,
-            });
 
             const validationResults = validationResult(
                 req
@@ -53,18 +48,21 @@ class LoadController {
             // removing campaigns that the (served loads + pending loads)*price > budget
             let filteredCampaigns = await Promise.all(
                 campaigns.map(async (campaign) => {
-                    const servedCountPromise = loadSchema.countDocuments({
-                        loadStatusId: LoadStatusId.SERVED,
-                    });
+                    // const servedCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.SERVED,
+                    // });
 
-                    const pendingCountPromise = loadSchema.countDocuments({
-                        loadStatusId: LoadStatusId.PENDING,
-                    });
+                    // const pendingCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.PENDING,
+                    // });
 
-                    const [servedCount, pendingCount] = await Promise.all([
-                        servedCountPromise,
-                        pendingCountPromise,
-                    ]);
+                    // const [servedCount, pendingCount] = await Promise.all([
+                    //     servedCountPromise,
+                    //     pendingCountPromise,
+                    // ]);
+
+                    const servedCount = 0;
+                    const pendingCount = 0;
 
                     const totalCost =
                         ((servedCount + pendingCount) / 1000) *
@@ -73,19 +71,19 @@ class LoadController {
                     const cutoffDate = new Date(
                         Date.now() - 24 * 60 * 60 * 1000
                     );
-                    // const viewedInPastDayPromise =
-                    //     await loadSchema.countDocuments({
-                    //         deviceId: deviceId,
-                    //         loadStatusId: {
-                    //             $in: [
-                    //                 LoadStatusId.PENDING,
-                    //                 LoadStatusId.SERVED,
-                    //             ],
-                    //         },
-                    //         createdAt: { $gte: cutoffDate },
-                    //     });
+                    const viewedInPastDayPromise =
+                        await loadSchema.countDocuments({
+                            deviceId: deviceId,
+                            loadStatusId: {
+                                $in: [
+                                    LoadStatusId.PENDING,
+                                    LoadStatusId.SERVED,
+                                ],
+                            },
+                            createdAt: { $gte: cutoffDate },
+                        });
 
-                    const viewedInPastDay = false//viewedInPastDayPromise > 0;
+                    const viewedInPastDay = viewedInPastDayPromise > 0;
 
                     if (
                         totalCost <= campaign.budget * 1.1 &&
