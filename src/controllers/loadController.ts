@@ -123,14 +123,18 @@ class LoadController {
 
                     const now = new Date();
                     const diffInMs = endDate.getTime() - now.getTime();
-                    const remainingHours = diffInMs / (1000 * 60 * 60);
+                    const remainingMinutes = diffInMs / (1000 * 60);
 
-                    const campaignNeeds = totalNeeds / remainingHours;
+                    const campaignNeeds = totalNeeds / remainingMinutes;
 
-                    return {
-                        campaign: campaignInfo.campaign,
-                        campaignNeeds,
-                    };
+                    if (campaignNeeds > 1) {
+                        return {
+                            campaign: campaignInfo.campaign,
+                            campaignNeeds,
+                        };
+                    }
+                    
+                    return null;
                 })
             );
             const selectedCampaign = this.pickRandomCampaign(campaignArray);
