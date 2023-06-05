@@ -19,6 +19,7 @@ import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
 class EventController {
     static save = async (req: Request, res: Response) => {
         try {
+
             const validationResults = validationResult(
                 req
             ) as unknown as ValidationResult;

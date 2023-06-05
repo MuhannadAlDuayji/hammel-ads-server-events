@@ -52,6 +52,13 @@ class LoadController {
                     // const pendingCountPromise = loadSchema.countDocuments({
                     //     loadStatusId: LoadStatusId.PENDING,
                     // });
+                    // const servedCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.SERVED,
+                    // });
+
+                    // const pendingCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.PENDING,
+                    // });
 
                     const servedCount = campaign.servedCount;
                     const pendingCount = campaign.pendingCount;
