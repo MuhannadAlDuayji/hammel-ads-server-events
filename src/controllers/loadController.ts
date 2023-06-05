@@ -3,10 +3,8 @@ import { ValidationError, ValidationResult } from "../types/validation";
 import { validationResult } from "express-validator";
 import { CampaignStatusId } from "../types/campaign/CampaignStatus";
 import Campaign from "../models/CampaignSchema";
-import Load from "../types/load";
 import loadSchema from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
-import LoadSchema from "../models/LoadSchema";
 
 class LoadController {
     static load = async (req: Request, res: Response) => {
@@ -47,18 +45,16 @@ class LoadController {
             // removing campaigns that the (served loads + pending loads)*price > budget
             let filteredCampaigns = await Promise.all(
                 campaigns.map(async (campaign) => {
-                    const servedCountPromise = loadSchema.countDocuments({
-                        loadStatusId: LoadStatusId.SERVED,
-                    });
+                    // const servedCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.SERVED,
+                    // });
 
-                    const pendingCountPromise = loadSchema.countDocuments({
-                        loadStatusId: LoadStatusId.PENDING,
-                    });
+                    // const pendingCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.PENDING,
+                    // });
 
-                    const [servedCount, pendingCount] = await Promise.all([
-                        servedCountPromise,
-                        pendingCountPromise,
-                    ]);
+                    const servedCount = campaign.servedCount;
+                    const pendingCount = campaign.pendingCount;
 
                     const totalCost =
                         ((servedCount + pendingCount) / 1000) *
@@ -131,6 +127,13 @@ class LoadController {
                 })
             );
             const selectedCampaign = this.pickRandomCampaign(campaignArray);
+
+            await Campaign.findByIdAndUpdate(selectedCampaign._id, {
+                $inc: {
+                    pendingCount: 1,
+                },
+            });
+
             const newLoad = new loadSchema({
                 campaignId: selectedCampaign._id,
                 deviceId,

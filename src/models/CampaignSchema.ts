@@ -70,6 +70,14 @@ const campaignSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    servedCount: {
+        type: Number,
+        default: 0,
+    },
+    pendingCount: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const Campaign = mongoose.model<Campaign & mongoose.Document>(

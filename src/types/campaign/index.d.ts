@@ -16,4 +16,6 @@ export default interface Campaign {
     views: number;
     moneySpent: number;
     adminMessage: string;
+    servedCount: number;
+    pendingCount: number;
 }

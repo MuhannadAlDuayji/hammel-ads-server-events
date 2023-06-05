@@ -58,15 +58,6 @@ class EventController {
                     message: "load not found",
                 });
             }
-
-            const user = await userSchema.findById(userId);
-            if (!user) {
-                return res.status(404).json({
-                    status: "error",
-                    message: "user not found",
-                });
-            }
-
             // Map the type string to the corresponding eventTypeName and eventTypeId
             let eventTypeName, eventTypeId;
 
@@ -168,6 +159,13 @@ class EventController {
                 await load.update({
                     loadStatusId: LoadStatusId.SERVED,
                     loadStatusName: LoadStatusName.SERVED,
+                });
+
+                await updatedCampaign.update({
+                    $inc: {
+                        pendingCount: -1,
+                        servedCount: 1,
+                    },
                 });
             }
 
