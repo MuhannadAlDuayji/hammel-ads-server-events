@@ -79,6 +79,7 @@ class LoadController {
                                     LoadStatusId.SERVED,
                                 ],
                             },
+                            campaignId: campaign._id,
                             createdAt: { $gte: cutoffDate },
                         });
 
