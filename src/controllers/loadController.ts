@@ -87,7 +87,8 @@ class LoadController {
 
                     if (
                         totalCost <= campaign.budget * 1.1 &&
-                        campaign.country === regionNames.of(region) &&
+                        (campaign.country === regionNames.of(region) ||
+                            campaign.country === "All Countries") &&
                         !viewedInPastDay
                     ) {
                         return { campaign, servedCount, pendingCount };

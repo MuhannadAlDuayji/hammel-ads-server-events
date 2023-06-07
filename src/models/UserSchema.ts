@@ -3,6 +3,7 @@ import IUser from "../types/user";
 import { UserTypeId, UserTypeName } from "../types/user/UserType";
 import crypto from "crypto";
 import UserPaymentMethodType from "../types/paymentmethod";
+import Transaction from "../types/transaction";
 
 const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true },
@@ -11,6 +12,7 @@ const userSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     photoPath: { type: String, default: null },
+    preferredLanguage: { type: String, default: "ar" },
     userTypeName: {
         type: String,
         default: "User",
@@ -49,6 +51,10 @@ const userSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: new Date(Date.now()),
+    },
+    transactions: {
+        type: Array<Transaction>,
+        default: [],
     },
 });
 const User = mongoose.model<IUser>("User", userSchema);
