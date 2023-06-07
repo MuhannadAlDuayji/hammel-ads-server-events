@@ -64,7 +64,7 @@ class LoadController {
                     const pendingCount = campaign.pendingCount;
 
                     const totalCost =
-                        ((servedCount + pendingCount) / 1000) *
+                        ((servedCount) / 1000) *
                         Number(process.env.THOUSAND_VIEWS_COST);
 
                     const cutoffDate = new Date(
@@ -75,7 +75,7 @@ class LoadController {
                             deviceId: deviceId,
                             loadStatusId: {
                                 $in: [
-                                    LoadStatusId.PENDING,
+                                    // LoadStatusId.PENDING,
                                     LoadStatusId.SERVED,
                                 ],
                             },
@@ -86,7 +86,7 @@ class LoadController {
                     const viewedInPastDay = viewedInPastDayPromise > 0;
 
                     if (
-                        totalCost <= campaign.budget * 1.1 &&
+                        totalCost <= campaign.budget &&
                         (campaign.country === regionNames.of(region) ||
                             campaign.country === "All Countries") &&
                         !viewedInPastDay
@@ -116,8 +116,7 @@ class LoadController {
                         (campaignInfo.campaign.budget /
                             Number(process.env.THOUSAND_VIEWS_COST)) *
                             1000 -
-                        campaignInfo.servedCount -
-                        campaignInfo.pendingCount;
+                        campaignInfo.servedCount;
 
                     if (totalNeeds < 0) totalNeeds = 0;
 
