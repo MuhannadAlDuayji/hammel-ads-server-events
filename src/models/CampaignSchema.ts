@@ -1,9 +1,15 @@
 import * as mongoose from "mongoose";
-import {
-    CampaignStatusId,
-    CampaignStatusName,
-} from "../types/campaign/CampaignStatus";
+import { CampaignStatusName } from "../types/campaign/CampaignStatus";
 import Campaign from "../types/campaign";
+
+const DataSet = new mongoose.Schema({
+    date: { type: String },
+    viewCount: { type: Number },
+    clickCount: { type: Number },
+    closeCount: { type: Number },
+    averageClickWatchTime: { type: Number },
+    averageCloseWatchTime: { type: Number },
+});
 
 const campaignSchema = new mongoose.Schema({
     title: {
@@ -77,6 +83,10 @@ const campaignSchema = new mongoose.Schema({
     pendingCount: {
         type: Number,
         default: 0,
+    },
+    datasets: {
+        type: [DataSet],
+        default: [],
     },
 });
 

@@ -15,11 +15,11 @@ import {
 } from "../types/campaign/CampaignStatus";
 import Load from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
+import { Dataset } from "../types/campaign";
 
 class EventController {
     static save = async (req: Request, res: Response) => {
         try {
-
             const validationResults = validationResult(
                 req
             ) as unknown as ValidationResult;
@@ -101,7 +101,7 @@ class EventController {
             newEvent.save();
 
             // Find the campaign by id and update it with the new event data
-            const updatedCampaign = await campaignSchema.findByIdAndUpdate(
+            const campaign = await campaignSchema.findByIdAndUpdate(
                 load.campaignId,
                 {
                     $set: {
@@ -121,18 +121,96 @@ class EventController {
                 { new: true }
             );
 
-            if (!updatedCampaign) {
+            if (!campaign) {
                 return res.status(500).json({
                     status: "error",
                     message: "internal server error",
                 });
             }
 
+            // get today date string
+            const todayDate = new Date();
+            const todayDateString = todayDate.toISOString().slice(0, 10); // ex: '2023-06-23'
+
+            const datasetIndex = campaign.datasets.findIndex(
+                (dataset: Dataset) => dataset.date === todayDateString
+            );
+
+            if (datasetIndex === -1) {
+                // if it doesn't create a new dataset with the date of today and 0 counters and averages and add the value current event
+                const newDataset: Dataset = {
+                    date: todayDateString,
+                    viewCount: 0,
+                    clickCount: 0,
+                    closeCount: 0,
+                    averageClickWatchTime: 0,
+                    averageCloseWatchTime: 0,
+                };
+
+                switch (type.toLowerCase()) {
+                    case EventTypeName.VIEW:
+                        newDataset.viewCount++;
+                        break;
+                    case EventTypeName.CLICK:
+                        newDataset.clickCount++;
+                        newDataset.averageClickWatchTime = event.watchTime || 0;
+                        break;
+                    case EventTypeName.CLOSE:
+                        newDataset.closeCount++;
+                        newDataset.averageCloseWatchTime = event.watchTime || 0;
+                        break;
+                }
+
+                campaign.datasets.push(newDataset);
+            } else {
+                // check if today's dataset exists on the campaign {date: '2023-06-23'}  .date === todayDateString
+                // it it exists update the dataset with the new value of event
+                switch (type.toLowerCase()) {
+                    case EventTypeName.VIEW:
+                        campaign.datasets[datasetIndex].viewCount++;
+                        break;
+                    case EventTypeName.CLICK:
+                        if (event.watchTime) {
+                            const currentAverageWatchTime =
+                                campaign.datasets[datasetIndex]
+                                    .averageClickWatchTime;
+                            const numberOfClicks =
+                                campaign.datasets[datasetIndex].clickCount;
+                            campaign.datasets[
+                                datasetIndex
+                            ].averageClickWatchTime =
+                                (currentAverageWatchTime * numberOfClicks +
+                                    event.watchTime) /
+                                (numberOfClicks + 1);
+                        }
+                        campaign.datasets[datasetIndex].clickCount++;
+                        break;
+                    case EventTypeName.CLOSE:
+                        if (event.watchTime) {
+                            const currentAverageWatchTime =
+                                campaign.datasets[datasetIndex]
+                                    .averageCloseWatchTime;
+                            const numberOfCloses =
+                                campaign.datasets[datasetIndex].closeCount;
+                            campaign.datasets[
+                                datasetIndex
+                            ].averageCloseWatchTime =
+                                (currentAverageWatchTime * numberOfCloses +
+                                    event.watchTime) /
+                                (numberOfCloses + 1);
+                        }
+                        campaign.datasets[datasetIndex].closeCount++;
+                        break;
+                }
+            }
+
+            await campaign.save();
+
             if (newEvent.eventTypeId === EventTypeId.VIEW) {
                 const cost =
                     (Number(process.env.THOUSAND_VIEWS_COST) || 1) / 1000;
                 const currentBalance: number | null = await this.chargeUser(
-                    updatedCampaign.userId,
+                    campaign.userId,
                     cost
                 );
                 if (currentBalance === null) {
@@ -142,15 +220,15 @@ class EventController {
                     });
                 }
 
-                if (updatedCampaign.moneySpent >= updatedCampaign.budget) {
+                if (campaign.moneySpent >= campaign.budget) {
                     // make status ended
-                    await updatedCampaign.update({
+                    await campaign.update({
                         campaignStatusName: CampaignStatusName.ENDED,
                         campaignStatusId: CampaignStatusId.ENDED,
                     });
                 } else if (cost > currentBalance) {
                     // status waiting for funds
-                    await updatedCampaign.update({
+                    await campaign.update({
                         campaignStatusName: CampaignStatusName.WAITINGFORFUNDS,
                         campaignStatusId: CampaignStatusId.WAITINGFORFUNDS,
                     });
@@ -162,7 +240,7 @@ class EventController {
                     loadStatusName: LoadStatusName.SERVED,
                 });
 
-                await updatedCampaign.update({
+                await campaign.update({
                     $inc: {
                         pendingCount: -1,
                         servedCount: 1,
