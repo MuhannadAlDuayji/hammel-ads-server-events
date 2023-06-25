@@ -10,6 +10,6 @@ RUN npm ci --only=production
 COPY . .
 
 
-EXPOSE 3501
+EXPOSE 3501 
 USER node
 CMD "npm" "start"
