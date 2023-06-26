@@ -64,7 +64,7 @@ class LoadController {
                     const pendingCount = campaign.pendingCount;
 
                     const totalCost =
-                        ((servedCount) / 1000) *
+                        (servedCount / 1000) *
                         Number(process.env.THOUSAND_VIEWS_COST);
 
                     const cutoffDate = new Date(
@@ -88,7 +88,8 @@ class LoadController {
                     if (
                         totalCost <= campaign.budget &&
                         (campaign.country === regionNames.of(region) ||
-                            campaign.country === "All Countries") &&
+                            campaign.country.toLocaleLowerCase() ===
+                                "all countries") &&
                         !viewedInPastDay
                     ) {
                         return { campaign, servedCount, pendingCount };
@@ -134,7 +135,7 @@ class LoadController {
                             campaignNeeds,
                         };
                     }
-                    
+
                     return null;
                 })
             );
