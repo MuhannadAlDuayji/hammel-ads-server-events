@@ -4,7 +4,8 @@ import bodyParser from "body-parser";
 import connection from "./services/db";
 import eventRoutes from "./routes/events";
 import loadRoutes from "./routes/loads";
-import loadSchema from "./models/LoadSchema";
+import LoadSchema from "./models/LoadSchema";
+import EventSchema from "./models/EventSchema";
 
 import cron from "node-cron";
 
@@ -35,7 +36,7 @@ app.use("/events/v1/load", loadRoutes);
 
 const port: number = Number(process.env.PORT) || 3501;
 
-cron.schedule("0 * * * *", async () => {
+cron.schedule("1 * * * *", async () => {
     try {
         const filter = {
             loadStatusId: LoadStatusId.PENDING,
@@ -48,9 +49,21 @@ cron.schedule("0 * * * *", async () => {
             },
         };
 
-        const result = await loadSchema.updateMany(filter, update);
+        const result = await LoadSchema.updateMany(filter, update);
 
         console.log(`${result.modifiedCount} loads updated to "unvalid".`);
+
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const resultEvent = await EventSchema.deleteMany({
+            createdAt: { $lte: sevenDaysAgo },
+        });
+
+        const resultLoad = await LoadSchema.deleteMany({
+            createdAt: { $lte: sevenDaysAgo },
+        });
+
+        console.log(`${resultEvent.deletedCount} events deleted.`);
+        console.log(`${resultLoad.deletedCount} loads deleted.`);
     } catch (error) {
         console.error(error);
     }
