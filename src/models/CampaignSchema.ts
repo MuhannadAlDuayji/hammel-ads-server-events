@@ -1,14 +1,30 @@
 import * as mongoose from "mongoose";
 import { CampaignStatusName } from "../types/campaign/CampaignStatus";
 import Campaign from "../types/campaign";
+import countryList from "../static/countryList";
 
-const DataSet = new mongoose.Schema({
+const datasetSchema = new mongoose.Schema({
     date: { type: String },
     viewCount: { type: Number },
     clickCount: { type: Number },
     closeCount: { type: Number },
     averageClickWatchTime: { type: Number },
     averageCloseWatchTime: { type: Number },
+});
+
+const analyticsItemSchema = new mongoose.Schema({
+    id: {
+        type: Number,
+        required: true,
+    },
+    name: {
+        type: String,
+        required: true,
+    },
+    datasets: {
+        type: [datasetSchema],
+        default: [],
+    },
 });
 
 const campaignSchema = new mongoose.Schema({
@@ -84,11 +100,31 @@ const campaignSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    datasets: {
-        type: [DataSet],
-        default: [],
+    // datasets: {
+    //     type: [DataSet],
+    //     default: [],
+    // },
+    analytics: {
+        type: [analyticsItemSchema],
+        default: function () {
+            const countries = countryList.map((country: string, i: number) => ({
+                id: i,
+                name: country,
+                datasets: [],
+            }));
+            console.log(countries);
+            return countries;
+        },
     },
 });
+
+/*
+analytics: [
+    {name: "total", datasets: [{date: ...}]}
+    {name: "saudi arabia", datasets: [{date: ...}]},
+    ...
+]
+*/
 
 const Campaign = mongoose.model<Campaign & mongoose.Document>(
     "Campaign",

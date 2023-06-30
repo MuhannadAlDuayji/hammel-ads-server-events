@@ -8,4 +8,5 @@ export default interface Load {
     loadStatusName: LoadStatusName;
     campaignId: string;
     createdAt: Date;
+    country: string;
 }

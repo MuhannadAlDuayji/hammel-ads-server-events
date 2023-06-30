@@ -15,7 +15,7 @@ import {
 } from "../types/campaign/CampaignStatus";
 import Load from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
-import { Dataset } from "../types/campaign";
+import { AnalyiticsItem, Dataset } from "../types/campaign";
 
 class EventController {
     static save = async (req: Request, res: Response) => {
@@ -131,10 +131,24 @@ class EventController {
             // get today date string
             const todayDate = new Date();
             const todayDateString = todayDate.toISOString().slice(0, 10); // ex: '2023-06-23'
+            const country = load.country;
 
-            const datasetIndex = campaign.datasets.findIndex(
+            const targetCountry = campaign.analytics.find(
+                (item: AnalyiticsItem) =>
+                    item.name.toLowerCase() === country.toLowerCase()
+            );
+
+            console.log("target", targetCountry);
+            const totalStats = campaign.analytics.find(
+                (item: AnalyiticsItem) => item.id === 0
+            );
+            if (!totalStats) return res.status(500);
+
+            const datasetIndex = totalStats.datasets.findIndex(
                 (dataset: Dataset) => dataset.date === todayDateString
             );
+
+            // update data in total
 
             if (datasetIndex === -1) {
                 // if it doesn't create a new dataset with the date of today and 0 counters and averages and add the value current event
@@ -161,49 +175,137 @@ class EventController {
                         break;
                 }
 
-                campaign.datasets.push(newDataset);
+                const totalStats = campaign.analytics.find(
+                    (item: any) => item.id === 0
+                );
+                if (!totalStats) return res.status(500);
+
+                totalStats.datasets.push(newDataset);
             } else {
                 // check if today's dataset exists on the campaign {date: '2023-06-23'}  .date === todayDateString
                 // it it exists update the dataset with the new value of event
                 switch (type.toLowerCase()) {
                     case EventTypeName.VIEW:
-                        campaign.datasets[datasetIndex].viewCount++;
+                        totalStats.datasets[datasetIndex].viewCount++;
                         break;
                     case EventTypeName.CLICK:
                         if (event.watchTime) {
                             const currentAverageWatchTime =
-                                campaign.datasets[datasetIndex]
+                                totalStats.datasets[datasetIndex]
                                     .averageClickWatchTime;
                             const numberOfClicks =
-                                campaign.datasets[datasetIndex].clickCount;
-                            campaign.datasets[
+                                totalStats.datasets[datasetIndex].clickCount;
+                            totalStats.datasets[
                                 datasetIndex
                             ].averageClickWatchTime =
                                 (currentAverageWatchTime * numberOfClicks +
                                     event.watchTime) /
                                 (numberOfClicks + 1);
                         }
-                        campaign.datasets[datasetIndex].clickCount++;
+                        totalStats.datasets[datasetIndex].clickCount++;
                         break;
                     case EventTypeName.CLOSE:
                         if (event.watchTime) {
                             const currentAverageWatchTime =
-                                campaign.datasets[datasetIndex]
+                                totalStats.datasets[datasetIndex]
                                     .averageCloseWatchTime;
                             const numberOfCloses =
-                                campaign.datasets[datasetIndex].closeCount;
-                            campaign.datasets[
+                                totalStats.datasets[datasetIndex].closeCount;
+                            totalStats.datasets[
                                 datasetIndex
                             ].averageCloseWatchTime =
                                 (currentAverageWatchTime * numberOfCloses +
                                     event.watchTime) /
                                 (numberOfCloses + 1);
                         }
-                        campaign.datasets[datasetIndex].closeCount++;
+                        totalStats.datasets[datasetIndex].closeCount++;
                         break;
                 }
             }
 
+            // update data in target country if exists
+
+            if (targetCountry) {
+                const datasetIndexTarget = targetCountry.datasets.findIndex(
+                    (dataset: Dataset) => dataset.date === todayDateString
+                );
+                if (datasetIndexTarget === -1) {
+                    // if it doesn't create a new dataset with the date of today and 0 counters and averages and add the value current event
+                    const newDataset: Dataset = {
+                        date: todayDateString,
+                        viewCount: 0,
+                        clickCount: 0,
+                        closeCount: 0,
+                        averageClickWatchTime: 0,
+                        averageCloseWatchTime: 0,
+                    };
+
+                    switch (type.toLowerCase()) {
+                        case EventTypeName.VIEW:
+                            newDataset.viewCount++;
+                            break;
+                        case EventTypeName.CLICK:
+                            newDataset.clickCount++;
+                            newDataset.averageClickWatchTime =
+                                event.watchTime || 0;
+                            break;
+                        case EventTypeName.CLOSE:
+                            newDataset.closeCount++;
+                            newDataset.averageCloseWatchTime =
+                                event.watchTime || 0;
+                            break;
+                    }
+
+                    targetCountry.datasets.push(newDataset);
+                } else {
+                    // check if today's dataset exists on the campaign {date: '2023-06-23'}  .date === todayDateString
+                    // it it exists update the dataset with the new value of event
+                    switch (type.toLowerCase()) {
+                        case EventTypeName.VIEW:
+                            targetCountry.datasets[datasetIndexTarget]
+                                .viewCount++;
+                            break;
+                        case EventTypeName.CLICK:
+                            if (event.watchTime) {
+                                const currentAverageWatchTime =
+                                    targetCountry.datasets[datasetIndexTarget]
+                                        .averageClickWatchTime;
+                                const numberOfClicks =
+                                    targetCountry.datasets[datasetIndexTarget]
+                                        .clickCount;
+                                targetCountry.datasets[
+                                    datasetIndexTarget
+                                ].averageClickWatchTime =
+                                    (currentAverageWatchTime * numberOfClicks +
+                                        event.watchTime) /
+                                    (numberOfClicks + 1);
+                            }
+                            targetCountry.datasets[datasetIndexTarget]
+                                .clickCount++;
+                            break;
+                        case EventTypeName.CLOSE:
+                            if (event.watchTime) {
+                                const currentAverageWatchTime =
+                                    targetCountry.datasets[datasetIndexTarget]
+                                        .averageCloseWatchTime;
+                                const numberOfCloses =
+                                    targetCountry.datasets[datasetIndexTarget]
+                                        .closeCount;
+                                targetCountry.datasets[
+                                    datasetIndexTarget
+                                ].averageCloseWatchTime =
+                                    (currentAverageWatchTime * numberOfCloses +
+                                        event.watchTime) /
+                                    (numberOfCloses + 1);
+                            }
+                            targetCountry.datasets[datasetIndexTarget]
+                                .closeCount++;
+                            break;
+                    }
+                }
+            }
+
+            campaign.markModified("analytics");
             await campaign.save();
 
             if (newEvent.eventTypeId === EventTypeId.VIEW) {

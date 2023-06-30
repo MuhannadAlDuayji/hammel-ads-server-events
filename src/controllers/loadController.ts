@@ -87,7 +87,8 @@ class LoadController {
 
                     if (
                         totalCost <= campaign.budget &&
-                        (campaign.country === regionNames.of(region) ||
+                        (campaign.country.toLocaleLowerCase() ===
+                            regionNames.of(region)?.toLocaleLowerCase() ||
                             campaign.country.toLocaleLowerCase() ===
                                 "all countries") &&
                         !viewedInPastDay
@@ -153,6 +154,7 @@ class LoadController {
                 placementId,
                 loadStatusId: LoadStatusId.PENDING,
                 loadStatusName: LoadStatusName.PENDING,
+                country: regionNames.of(region),
             });
             await newLoad.save();
 
@@ -164,6 +166,7 @@ class LoadController {
                     img: selectedCampaign.photoPath,
                     userId: selectedCampaign.userId,
                     campaignId: selectedCampaign._id,
+                    country: newLoad.country,
                 },
             });
         } catch (err: any) {

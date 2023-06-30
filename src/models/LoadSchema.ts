@@ -32,6 +32,10 @@ const loadSchema = new mongoose.Schema({
         type: Date,
         default: new Date(Date.now()),
     },
+    country: {
+        type: String,
+        required: true,
+    },
 });
 
 const Load = mongoose.model<Load & mongoose.Document>("Load", loadSchema);
