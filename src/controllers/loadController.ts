@@ -72,24 +72,17 @@ class LoadController {
                     const cutoffDate = new Date(
                         Date.now() - 24 * 60 * 60 * 1000
                     );
-                    const viewedInPastDayPromise = await loadSchema.aggregate([
-                        {
-                            $match: {
-                                deviceId: deviceId,
-                                loadStatusId: LoadStatusId.SERVED,
-                                campaignId: campaign.id,
-                                createdAt: { $gte: cutoffDate },
-                            },
+                    const viewedInPastDayPromise = await loadSchema.findOne({
+                        deviceId: deviceId,
+                        loadStatusId: {
+                            $in: [
+                                // LoadStatusId.PENDING,
+                                LoadStatusId.SERVED,
+                            ],
                         },
-                        {
-                            $group: {
-                                _id: null,
-                                count: { $sum: 1 },
-                            },
-                        },
-                    ]);
-
-                    const viewedInPastDay = viewedInPastDayPromise.length > 0;
+                        campaignId: campaign._id,
+                        createdAt: { $gte: cutoffDate },
+                    });
 
                     if (
                         totalCost <= campaign.budget &&
@@ -97,7 +90,7 @@ class LoadController {
                             regionNames.of(region)?.toLowerCase() ||
                             campaign.country.toLowerCase() ===
                                 "all countries") &&
-                        !viewedInPastDay
+                        !viewedInPastDayPromise
                     ) {
                         return { campaign, servedCount, pendingCount };
                     }
