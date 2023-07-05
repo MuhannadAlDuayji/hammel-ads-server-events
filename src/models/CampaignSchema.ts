@@ -112,7 +112,6 @@ const campaignSchema = new mongoose.Schema({
                 name: country,
                 datasets: [],
             }));
-            console.log(countries);
             return countries;
         },
     },

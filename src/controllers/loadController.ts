@@ -32,7 +32,9 @@ class LoadController {
                 campaignStatusId: {
                     $in: [CampaignStatusId.READY, CampaignStatusId.ACTIVE],
                 },
-            });
+            }).select(
+                "_id servedCount pendingCount budget country endDate link photoPath userId"
+            );
 
             if (campaigns.length === 0)
                 return res.status(404).json({
@@ -87,9 +89,9 @@ class LoadController {
 
                     if (
                         totalCost <= campaign.budget &&
-                        (campaign.country.toLocaleLowerCase() ===
-                            regionNames.of(region)?.toLocaleLowerCase() ||
-                            campaign.country.toLocaleLowerCase() ===
+                        (campaign.country.toLowerCase() ===
+                            regionNames.of(region)?.toLowerCase() ||
+                            campaign.country.toLowerCase() ===
                                 "all countries") &&
                         !viewedInPastDay
                     ) {
