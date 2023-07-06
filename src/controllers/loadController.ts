@@ -45,59 +45,59 @@ class LoadController {
             let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
             // removing campaigns that the (served loads + pending loads)*price > budget
-            // let filteredCampaigns = await Promise.all(
-            //     campaigns.map(async (campaign) => {
-            //         // const servedCountPromise = loadSchema.countDocuments({
-            //         //     loadStatusId: LoadStatusId.SERVED,
-            //         // });
+            let filteredCampaigns = await Promise.all(
+                campaigns.map(async (campaign) => {
+                    // const servedCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.SERVED,
+                    // });
 
-            //         // const pendingCountPromise = loadSchema.countDocuments({
-            //         //     loadStatusId: LoadStatusId.PENDING,
-            //         // });
-            //         // const servedCountPromise = loadSchema.countDocuments({
-            //         //     loadStatusId: LoadStatusId.SERVED,
-            //         // });
+                    // const pendingCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.PENDING,
+                    // });
+                    // const servedCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.SERVED,
+                    // });
 
-            //         // const pendingCountPromise = loadSchema.countDocuments({
-            //         //     loadStatusId: LoadStatusId.PENDING,
-            //         // });
+                    // const pendingCountPromise = loadSchema.countDocuments({
+                    //     loadStatusId: LoadStatusId.PENDING,
+                    // });
 
-            //         const servedCount = campaign.servedCount;
-            //         const pendingCount = campaign.pendingCount;
+                    const servedCount = campaign.servedCount;
+                    const pendingCount = campaign.pendingCount;
 
-            //         const totalCost =
-            //             (servedCount / 1000) *
-            //             Number(process.env.THOUSAND_VIEWS_COST);
+                    const totalCost =
+                        (servedCount / 1000) *
+                        Number(process.env.THOUSAND_VIEWS_COST);
 
-            //         const cutoffDate = new Date(
-            //             Date.now() - 24 * 60 * 60 * 1000
-            //         );
-            //         const viewedInPastDayPromise = await loadSchema.findOne({
-            //             deviceId: deviceId,
-            //             loadStatusId: {
-            //                 $in: [
-            //                     // LoadStatusId.PENDING,
-            //                     LoadStatusId.SERVED,
-            //                 ],
-            //             },
-            //             campaignId: campaign._id,
-            //             createdAt: { $gte: cutoffDate },
-            //         });
+                    const cutoffDate = new Date(
+                        Date.now() - 24 * 60 * 60 * 1000
+                    );
+                    const viewedInPastDayPromise = await loadSchema.findOne({
+                        deviceId: deviceId,
+                        loadStatusId: {
+                            $in: [
+                                // LoadStatusId.PENDING,
+                                LoadStatusId.SERVED,
+                            ],
+                        },
+                        campaignId: campaign._id,
+                        createdAt: { $gte: cutoffDate },
+                    });
 
-            //         if (
-            //             totalCost <= campaign.budget &&
-            //             (campaign.country.toLowerCase() ===
-            //                 regionNames.of(region)?.toLowerCase() ||
-            //                 campaign.country.toLowerCase() ===
-            //                     "all countries") &&
-            //             !viewedInPastDayPromise
-            //         ) {
-            //             return { campaign, servedCount, pendingCount };
-            //         }
+                    if (
+                        totalCost <= campaign.budget &&
+                        (campaign.country.toLowerCase() ===
+                            regionNames.of(region)?.toLowerCase() ||
+                            campaign.country.toLowerCase() ===
+                                "all countries") &&
+                        !viewedInPastDayPromise
+                    ) {
+                        return { campaign, servedCount, pendingCount };
+                    }
 
-            //         return null;
-            //     })
-            // );
+                    return null;
+                })
+            );
 
             // filteredCampaigns = filteredCampaigns.filter(
             //     (campaign) => campaign !== null
