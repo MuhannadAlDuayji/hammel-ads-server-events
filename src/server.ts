@@ -54,12 +54,14 @@ cron.schedule("1 * * * *", async () => {
         console.log(`${result.modifiedCount} loads updated to "unvalid".`);
 
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const twentyfourhoursago = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
         const resultEvent = await EventSchema.deleteMany({
-            createdAt: { $lte: sevenDaysAgo },
+            createdAt: { $lte: twentyfourhoursago },
         });
 
         const resultLoad = await LoadSchema.deleteMany({
-            createdAt: { $lte: sevenDaysAgo },
+            createdAt: { $lte: twentyfourhoursago },
         });
 
         console.log(`${resultEvent.deletedCount} events deleted.`);

@@ -26,16 +26,15 @@ class LoadController {
             // filter campaigns with show period startDate >= now >= endDate
 
             const now = new Date();
-            const campaigns: any[] = [];
-            // const campaigns =  await Campaign.find({
-            //     startDate: { $lte: now },
-            //     endDate: { $gte: now },
-            //     campaignStatusId: {
-            //         $in: [CampaignStatusId.READY, CampaignStatusId.ACTIVE],
-            //     },
-            // }).select(
-            //     "_id servedCount pendingCount budget country endDate link photoPath userId"
-            // );
+            const campaigns = await Campaign.find({
+                startDate: { $lte: now },
+                endDate: { $gte: now },
+                campaignStatusId: {
+                    $in: [CampaignStatusId.READY, CampaignStatusId.ACTIVE],
+                },
+            }).select(
+                "_id servedCount pendingCount budget country endDate link photoPath userId"
+            );
 
             if (campaigns.length === 0)
                 return res.status(404).json({
@@ -73,24 +72,25 @@ class LoadController {
                     const cutoffDate = new Date(
                         Date.now() - 24 * 60 * 60 * 1000
                     );
-                    // const viewedInPastDayPromise = await loadSchema.findOne({
-                    //     deviceId: deviceId,
-                    //     loadStatusId: {
-                    //         $in: [
-                    //             // LoadStatusId.PENDING,
-                    //             LoadStatusId.SERVED,
-                    //         ],
-                    //     },
-                    //     campaignId: campaign._id,
-                    //     createdAt: { $gte: cutoffDate },
-                    // });
+                    const viewedInPastDayPromise = await loadSchema.findOne({
+                        deviceId: deviceId,
+                        loadStatusId: {
+                            $in: [
+                                // LoadStatusId.PENDING,
+                                LoadStatusId.SERVED,
+                            ],
+                        },
+                        campaignId: campaign._id,
+                        createdAt: { $gte: cutoffDate },
+                    });
 
                     if (
                         totalCost <= campaign.budget &&
                         (campaign.country.toLowerCase() ===
                             regionNames.of(region)?.toLowerCase() ||
-                            campaign.country.toLowerCase() === "all countries")
-                        // && !viewedInPastDayPromise
+                            campaign.country.toLowerCase() ===
+                                "all countries") &&
+                        !viewedInPastDayPromise
                     ) {
                         return { campaign, servedCount, pendingCount };
                     }
@@ -98,10 +98,6 @@ class LoadController {
                     return null;
                 })
             );
-
-            return res
-                .status(500)
-                .json({ status: "error", message: "internal server error" });
 
             filteredCampaigns = filteredCampaigns.filter(
                 (campaign) => campaign !== null

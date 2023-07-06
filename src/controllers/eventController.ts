@@ -27,7 +27,7 @@ class EventController {
             const errors: ValidationError[] =
                 (validationResults?.errors as ValidationError[]) || [];
 
-            if (errors.length > 0 || true) {
+            if (errors.length > 0) {
                 return res.status(400).json({
                     status: "error",
                     message: `invalid ${errors[0]?.param} : ${errors[0]?.value}`,
@@ -45,8 +45,6 @@ class EventController {
                 watchTimeEnd,
                 watchTime,
             } = req.body;
-
-            /*
 
             if (!isValidObjectId(loadId) || !isValidObjectId(userId)) {
                 return res.status(400).json({
@@ -352,7 +350,7 @@ class EventController {
                         servedCount: 1,
                     },
                 });
-            }*/
+            }
 
             // Same as before
             return res.status(200).json({
