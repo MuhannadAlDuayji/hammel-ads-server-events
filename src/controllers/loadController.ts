@@ -26,15 +26,16 @@ class LoadController {
             // filter campaigns with show period startDate >= now >= endDate
 
             const now = new Date();
-            const campaigns = await Campaign.find({
-                startDate: { $lte: now },
-                endDate: { $gte: now },
-                campaignStatusId: {
-                    $in: [CampaignStatusId.READY, CampaignStatusId.ACTIVE],
-                },
-            }).select(
-                "_id servedCount pendingCount budget country endDate link photoPath userId"
-            );
+            const campaigns: any[] = [];
+            // const campaigns =  await Campaign.find({
+            //     startDate: { $lte: now },
+            //     endDate: { $gte: now },
+            //     campaignStatusId: {
+            //         $in: [CampaignStatusId.READY, CampaignStatusId.ACTIVE],
+            //     },
+            // }).select(
+            //     "_id servedCount pendingCount budget country endDate link photoPath userId"
+            // );
 
             if (campaigns.length === 0)
                 return res.status(404).json({
