@@ -23,10 +23,6 @@ class LoadController {
 
             const { deviceId, placementId, region } = req.body;
 
-            return res
-                .status(500)
-                .json({ status: "error", message: "internal server error" });
-
             // filter campaigns with show period startDate >= now >= endDate
 
             const now = new Date();
@@ -102,6 +98,10 @@ class LoadController {
                     return null;
                 })
             );
+
+            return res
+                .status(500)
+                .json({ status: "error", message: "internal server error" });
 
             filteredCampaigns = filteredCampaigns.filter(
                 (campaign) => campaign !== null
