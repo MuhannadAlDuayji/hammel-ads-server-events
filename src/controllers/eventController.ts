@@ -16,6 +16,7 @@ import {
 import Load from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
 import { AnalyiticsItem, Dataset } from "../types/campaign";
+import EventQueue from "../utils/EventQueue";
 
 class EventController {
     static save = async (req: Request, res: Response) => {
@@ -97,9 +98,10 @@ class EventController {
                 createdAt: new Date(Date.now()),
             };
 
-            const newEvent = new EventSchema(event);
-            newEvent.save();
+            // const newEvent = new EventSchema(event);
+            // await newEvent.save();
 
+            EventQueue.enqueue(event);
             // Find the campaign by id and update it with the new event data
             const campaign = await campaignSchema.findByIdAndUpdate(
                 load.campaignId,
@@ -308,7 +310,7 @@ class EventController {
             campaign.markModified("analytics");
             await campaign.save();
 
-            if (newEvent.eventTypeId === EventTypeId.VIEW) {
+            if (event.eventTypeId === EventTypeId.VIEW) {
                 const cost =
                     (Number(process.env.THOUSAND_VIEWS_COST) || 1) / 1000;
                 const currentBalance: number | null = await this.chargeUser(
