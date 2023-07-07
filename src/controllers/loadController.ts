@@ -142,7 +142,7 @@ class LoadController {
             const selectedCampaign = this.pickRandomCampaign(campaignArray);
 
             selectedCampaign.pendingCount += 1;
-            selectedCampaign.save();
+            await selectedCampaign.save();
 
             const newLoad = new loadSchema({
                 campaignId: selectedCampaign._id,
