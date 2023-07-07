@@ -36,40 +36,46 @@ app.use("/events/v1/load", loadRoutes);
 
 const port: number = Number(process.env.PORT) || 3501;
 
-cron.schedule("1 * * * *", async () => {
-    try {
-        const filter = {
-            loadStatusId: LoadStatusId.PENDING,
-            createdAt: { $lt: new Date(Date.now() - 36 * 60 * 60 * 1000) },
-        };
-        const update = {
-            $set: {
-                loadStatusId: LoadStatusId.UNVALID,
-                loadStatusName: LoadStatusName.UNVALID,
-            },
-        };
+cron.schedule(
+    "* * * * *",
 
-        const result = await LoadSchema.updateMany(filter, update);
+    async () => {
+        try {
+            const filter = {
+                loadStatusId: LoadStatusId.PENDING,
+                createdAt: { $lt: new Date(Date.now() - 36 * 60 * 60 * 1000) },
+            };
+            const update = {
+                $set: {
+                    loadStatusId: LoadStatusId.UNVALID,
+                    loadStatusName: LoadStatusName.UNVALID,
+                },
+            };
 
-        console.log(`${result.modifiedCount} loads updated to "unvalid".`);
+            const result = await LoadSchema.updateMany(filter, update);
 
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        const twentyfourhoursago = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            console.log(`${result.modifiedCount} loads updated to "unvalid".`);
 
-        const resultEvent = await EventSchema.deleteMany({
-            createdAt: { $lte: twentyfourhoursago },
-        });
+            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            const twentyfourhoursago = new Date(
+                Date.now() - 24 * 60 * 60 * 1000
+            );
 
-        const resultLoad = await LoadSchema.deleteMany({
-            createdAt: { $lte: twentyfourhoursago },
-        });
+            const resultEvent = await EventSchema.deleteMany({
+                createdAt: { $lte: twentyfourhoursago },
+            });
 
-        console.log(`${resultEvent.deletedCount} events deleted.`);
-        console.log(`${resultLoad.deletedCount} loads deleted.`);
-    } catch (error) {
-        console.error(error);
+            const resultLoad = await LoadSchema.deleteMany({
+                createdAt: { $lte: twentyfourhoursago },
+            });
+
+            console.log(`${resultEvent.deletedCount} events deleted.`);
+            console.log(`${resultLoad.deletedCount} loads deleted.`);
+        } catch (error) {
+            console.error(error);
+        }
     }
-});
+);
 
 // start server
 app.listen(port, () => {
