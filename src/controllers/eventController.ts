@@ -140,7 +140,6 @@ class EventController {
                     item.name.toLowerCase() === country.toLowerCase()
             );
 
-            console.log("target", targetCountry);
             const totalStats = campaign.analytics.find(
                 (item: AnalyiticsItem) => item.id === 0
             );
@@ -326,25 +325,25 @@ class EventController {
 
                 if (campaign.moneySpent >= campaign.budget) {
                     // make status ended
-                    await campaign.update({
+                    await campaign.updateOne({
                         campaignStatusName: CampaignStatusName.ENDED,
                         campaignStatusId: CampaignStatusId.ENDED,
                     });
                 } else if (cost > currentBalance) {
                     // status waiting for funds
-                    await campaign.update({
+                    await campaign.updateOne({
                         campaignStatusName: CampaignStatusName.WAITINGFORFUNDS,
                         campaignStatusId: CampaignStatusId.WAITINGFORFUNDS,
                     });
                 }
 
                 // make the load served
-                await load.update({
+                await load.updateOne({
                     loadStatusId: LoadStatusId.SERVED,
                     loadStatusName: LoadStatusName.SERVED,
                 });
 
-                await campaign.update({
+                await campaign.updateOne({
                     $inc: {
                         pendingCount: -1,
                         servedCount: 1,
@@ -358,7 +357,7 @@ class EventController {
                 message: "event saved",
             });
         } catch (err: any) {
-            console.log(err);
+            console.log("error", err);
 
             res.status(500).json({
                 status: "error",

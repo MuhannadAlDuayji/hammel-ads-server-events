@@ -12,7 +12,6 @@ class EventQueue {
 
     enqueue(event: Event) {
         this.events.push(event);
-        console.log(this.events);
         this.startTimer();
     }
 
