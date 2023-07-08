@@ -31,6 +31,11 @@ const eventSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    country: {
+        type: String,
+        required: false,
+        default: null,
+    },
     placementId: {
         type: String,
         required: true,

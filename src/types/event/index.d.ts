@@ -5,6 +5,7 @@ export default interface Event {
     eventTypeName: EventTypeName;
     eventTypeId: EventTypeId;
     campaignId: string;
+    country: string;
     userId: string;
     deviceId: string;
     placementId: string;

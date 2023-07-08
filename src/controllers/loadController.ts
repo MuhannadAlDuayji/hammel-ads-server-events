@@ -139,7 +139,14 @@ class LoadController {
                     return null;
                 })
             );
-            const selectedCampaign = this.pickRandomCampaign(campaignArray);
+            const array = campaignArray.filter((campaign) => campaign !== null);
+
+            if (array.length === 0)
+                return res.status(404).json({
+                    status: "error",
+                    message: "no campaigns to load",
+                });
+            const selectedCampaign = this.pickRandomCampaign(array);
 
             selectedCampaign.pendingCount += 1;
             await selectedCampaign.save();
@@ -175,6 +182,7 @@ class LoadController {
     };
 
     private static pickRandomCampaign = (array: any) => {
+        console.log(array);
         // Calculate the sum of the numbers in the array
         const sum = array.reduce(
             (acc: number, num: any) => acc + num.campaignNeeds,

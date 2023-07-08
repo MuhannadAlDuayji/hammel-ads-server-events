@@ -55,7 +55,8 @@ const campaignSchema = new mongoose.Schema({
     },
     link: {
         type: String,
-        required: true,
+        required: false,
+        default: "",
     },
     campaignStatusName: {
         type: String,
