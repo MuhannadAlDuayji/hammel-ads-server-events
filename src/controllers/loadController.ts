@@ -182,7 +182,6 @@ class LoadController {
     };
 
     private static pickRandomCampaign = (array: any) => {
-        console.log(array);
         // Calculate the sum of the numbers in the array
         const sum = array.reduce(
             (acc: number, num: any) => acc + num.campaignNeeds,
