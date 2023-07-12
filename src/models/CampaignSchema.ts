@@ -75,7 +75,7 @@ const campaignSchema = new mongoose.Schema({
     },
     createdAt: {
         type: Date,
-        default: new Date(Date.now()),
+        required: true,
     },
     clicks: {
         type: Number,
@@ -117,14 +117,6 @@ const campaignSchema = new mongoose.Schema({
         },
     },
 });
-
-/*
-analytics: [
-    {name: "total", datasets: [{date: ...}]}
-    {name: "saudi arabia", datasets: [{date: ...}]},
-    ...
-]
-*/
 
 const Campaign = mongoose.model<Campaign & mongoose.Document>(
     "Campaign",

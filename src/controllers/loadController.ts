@@ -74,12 +74,7 @@ class LoadController {
                     );
                     const viewedInPastDayPromise = await loadSchema.findOne({
                         deviceId: deviceId,
-                        loadStatusId: {
-                            $in: [
-                                // LoadStatusId.PENDING,
-                                LoadStatusId.SERVED,
-                            ],
-                        },
+                        loadStatusId: LoadStatusId.SERVED,
                         campaignId: campaign._id,
                         createdAt: { $gte: cutoffDate },
                     });
@@ -158,6 +153,7 @@ class LoadController {
                 loadStatusId: LoadStatusId.PENDING,
                 loadStatusName: LoadStatusName.PENDING,
                 country: regionNames.of(region),
+                createdAt: new Date(Date.now()),
             });
             await newLoad.save();
 
@@ -170,6 +166,7 @@ class LoadController {
                     userId: selectedCampaign.userId,
                     campaignId: selectedCampaign._id,
                     country: newLoad.country,
+                    createdAt: newLoad.createdAt,
                 },
             });
         } catch (err: any) {

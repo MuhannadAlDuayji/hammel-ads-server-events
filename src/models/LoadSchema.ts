@@ -22,7 +22,6 @@ const loadSchema = new mongoose.Schema({
         type: Number,
         enum: [1, 2, 3],
         required: true,
-        index: true,
     },
     campaignId: {
         type: String,
@@ -30,7 +29,7 @@ const loadSchema = new mongoose.Schema({
     },
     createdAt: {
         type: Date,
-        default: new Date(Date.now()),
+        required: true,
     },
     country: {
         type: String,

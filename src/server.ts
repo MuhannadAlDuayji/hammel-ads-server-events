@@ -37,22 +37,22 @@ const port: number = Number(process.env.PORT) || 3501;
 
 cron.schedule("* * * * *", async () => {
     try {
-        const filter = {
-            loadStatusId: LoadStatusId.PENDING,
-            createdAt: { $lt: new Date(Date.now() - 36 * 60 * 60 * 1000) },
-        };
-        const update = {
-            $set: {
-                loadStatusId: LoadStatusId.UNVALID,
-                loadStatusName: LoadStatusName.UNVALID,
-            },
-        };
+        // const filter = {
+        //     loadStatusId: LoadStatusId.PENDING,
+        //     createdAt: { $lt: new Date(Date.now() - 36 * 60 * 60 * 1000) },
+        // };
+        // const update = {
+        //     $set: {
+        //         loadStatusId: LoadStatusId.UNVALID,
+        //         loadStatusName: LoadStatusName.UNVALID,
+        //     },
+        // };
 
-        const result = await LoadSchema.updateMany(filter, update);
+        // const result = await LoadSchema.updateMany(filter, update);
 
-        console.log(`${result.modifiedCount} loads updated to "unvalid".`);
+        // console.log(`${result.modifiedCount} loads updated to "unvalid".`);
 
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        // const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const twentyfourhoursago = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
         const resultEvent = await EventSchema.deleteMany({
