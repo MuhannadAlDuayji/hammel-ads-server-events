@@ -1,7 +1,7 @@
 import express, { Application } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import connection from "./services/db";
+import { connection, createTimeSeriesCollection } from "./services/db";
 import eventRoutes from "./routes/events";
 import loadRoutes from "./routes/loads";
 import LoadSchema from "./models/LoadSchema";
@@ -9,11 +9,7 @@ import EventSchema from "./models/EventSchema";
 
 import cron from "node-cron";
 
-// import userRoutes from "./routes/user";
-// import campaignRoutes from "./routes/campaigns";
-// import paymentRoutes from "./routes/payments";
 import helmet from "helmet";
-import { LoadStatusId, LoadStatusName } from "./types/load/LoadStatus";
 
 require("dotenv").config();
 
@@ -71,6 +67,7 @@ cron.schedule("* * * * *", async () => {
 });
 
 // start server
-app.listen(port, () => {
+app.listen(port, async () => {
+    await createTimeSeriesCollection();
     console.log(`server started on port ${port}...`);
 });

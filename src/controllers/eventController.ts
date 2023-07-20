@@ -1,21 +1,12 @@
 import { Request, Response } from "express";
-import campaignSchema from "../models/CampaignSchema";
 import userSchema from "../models/UserSchema";
-
 import { ValidationError, ValidationResult } from "../types/validation";
-
 import { validationResult } from "express-validator";
 import { isValidObjectId } from "mongoose";
 import Event from "../types/event";
-import EventSchema from "../models/EventSchema";
 import { EventTypeId, EventTypeName } from "../types/event/EventType";
-import {
-    CampaignStatusId,
-    CampaignStatusName,
-} from "../types/campaign/CampaignStatus";
 import Load from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
-import { AnalyiticsItem, Dataset } from "../types/campaign";
 import EventQueue from "../utils/EventQueue";
 
 class EventController {

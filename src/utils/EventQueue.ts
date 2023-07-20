@@ -8,6 +8,7 @@ import {
 import { EventTypeId, EventTypeName } from "../types/event/EventType";
 import Campaign, { AnalyiticsItem, Dataset } from "../types/campaign";
 import User from "../models/UserSchema";
+import { insertTimeSeriesData } from "../services/db";
 
 class EventQueue {
     private events: Event[];
@@ -48,6 +49,7 @@ class EventQueue {
             }
 
             await EventSchema.insertMany(eventsToSave);
+            await insertTimeSeriesData(eventsToSave);
             console.log(`${eventsToSave.length} events saved to the database.`);
         } catch (error) {
             console.error("Error saving events:", error);
