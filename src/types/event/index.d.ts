@@ -7,7 +7,6 @@ export default interface Event {
     campaignId: string;
     country: string;
     userId: string;
-    deviceId: string;
     placementId: string;
     watchTimeStart: number | null;
     watchTimeEnd: number | null;

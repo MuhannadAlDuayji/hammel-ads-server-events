@@ -27,10 +27,6 @@ const eventSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    deviceId: {
-        type: String,
-        required: true,
-    },
     country: {
         type: String,
         required: false,
