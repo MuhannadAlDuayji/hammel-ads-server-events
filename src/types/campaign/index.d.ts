@@ -1,20 +1,5 @@
 import mongoose from "mongoose";
 import { CampaignStatusId, CampaignStatusName } from "./CampaignStatus";
-
-export interface Dataset {
-    date: string;
-    viewCount: number;
-    clickCount: number;
-    closeCount: number;
-    averageClickWatchTime: number;
-    averageCloseWatchTime: number;
-}
-
-export interface AnalyiticsItem {
-    id: number;
-    name: string;
-    datasets: Dataset[];
-}
 export default interface Campaign {
     title: string;
     userId: string;
@@ -33,5 +18,4 @@ export default interface Campaign {
     adminMessage: string;
     servedCount: number;
     pendingCount: number;
-    analytics: AnalyiticsItem[];
 }
