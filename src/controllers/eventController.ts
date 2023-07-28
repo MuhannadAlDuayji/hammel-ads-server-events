@@ -88,7 +88,7 @@ class EventController {
 
             const event: Event = {
                 loadId,
-                city: String(clientIp),
+                city: city,
                 eventTypeId,
                 eventTypeName,
                 campaignId: load.campaignId,
