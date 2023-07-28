@@ -8,7 +8,7 @@ import { EventTypeId, EventTypeName } from "../types/event/EventType";
 import Load from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
 import EventQueue from "../utils/EventQueue";
-
+import maxmind from "maxmind";
 class EventController {
     static save = async (req: Request, res: Response) => {
         try {
@@ -74,8 +74,16 @@ class EventController {
                     });
             }
 
-            const clientIp =
-                req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+            const clientIp = req.socket.remoteAddress;
+            let city = "Unknown";
+            if (clientIp) {
+                const geoDatabase = await maxmind.open(
+                    "../static/GeoLite2-City.mmdb"
+                );
+                const geoData = geoDatabase.get(clientIp);
+                // @ts-ignore
+                city = geoData?.city?.names?.en || "Unknown";
+            }
             console.log("ip", clientIp);
 
             const event: Event = {
