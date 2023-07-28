@@ -88,7 +88,7 @@ class EventController {
 
             let city = "Unknown";
             if (clientIp) {
-                city = ip2location.getCity("91.186.243.168");
+                city = ip2location.getCity(clientIp);
             }
 
             const event: Event = {
