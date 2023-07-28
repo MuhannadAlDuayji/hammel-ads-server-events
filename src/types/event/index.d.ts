@@ -6,6 +6,7 @@ export default interface Event {
     eventTypeId: EventTypeId;
     campaignId: string;
     country: string;
+    city: string;
     userId: string;
     placementId: string;
     watchTimeStart: number | null;

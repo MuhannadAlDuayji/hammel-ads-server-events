@@ -51,15 +51,15 @@ cron.schedule("* * * * *", async () => {
         // const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const twentyfourhoursago = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-        const resultEvent = await EventSchema.deleteMany({
-            createdAt: { $lte: twentyfourhoursago },
-        });
+        // const resultEvent = await EventSchema.deleteMany({
+        //     createdAt: { $lte: twentyfourhoursago },
+        // });
 
         const resultLoad = await LoadSchema.deleteMany({
             createdAt: { $lte: twentyfourhoursago },
         });
 
-        console.log(`${resultEvent.deletedCount} events deleted.`);
+        // console.log(`${resultEvent.deletedCount} events deleted.`);
         console.log(`${resultLoad.deletedCount} loads deleted.`);
     } catch (error) {
         console.error(error);

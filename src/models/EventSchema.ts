@@ -32,6 +32,11 @@ const eventSchema = new mongoose.Schema({
         required: false,
         default: null,
     },
+    city: {
+        type: String,
+        required: false,
+        default: null,
+    },
     placementId: {
         type: String,
         required: true,
