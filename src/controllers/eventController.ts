@@ -78,13 +78,12 @@ class EventController {
             let city = "Unknown";
             if (clientIp) {
                 const geoDatabase = await maxmind.open(
-                    "../static/GeoLite2-City.mmdb"
+                    `${__dirname}/../static/GeoLite2-City.mmdb`
                 );
                 const geoData = geoDatabase.get(clientIp);
                 // @ts-ignore
                 city = geoData?.city?.names?.en || "Unknown";
             }
-            console.log("ip", clientIp);
 
             const event: Event = {
                 loadId,
