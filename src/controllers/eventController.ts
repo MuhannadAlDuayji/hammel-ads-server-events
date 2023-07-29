@@ -15,6 +15,7 @@ import {
     Country,
     Region,
 } from "ip2location-nodejs";
+import requestIP from "request-ip";
 let ip2location = new IP2Location();
 
 ip2location.open(`${__dirname}/../static/IP2LOCATION-LITE-DB3.BIN`);
@@ -84,7 +85,7 @@ class EventController {
                     });
             }
 
-            const clientIp = req.socket.remoteAddress;
+            const clientIp = requestIP.getClientIp(req);
 
             let city = "Unknown";
             if (clientIp) {
