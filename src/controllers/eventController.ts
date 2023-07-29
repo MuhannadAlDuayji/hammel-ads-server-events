@@ -88,10 +88,13 @@ class EventController {
             const clientIp = requestIP.getClientIp(req);
 
             let city = "Unknown";
+            let country = "Unknown";
             if (clientIp) {
                 city = ip2location.getCity(clientIp);
+                country = ip2location.getCountryLong(clientIp);
                 console.log("ip -> ", clientIp);
                 console.log("city -> ", city);
+                console.log("country -> ", country);
             }
 
             const event: Event = {
@@ -101,7 +104,8 @@ class EventController {
                 eventTypeId,
                 eventTypeName,
                 campaignId: load.campaignId,
-                country: load.country,
+                mobileRegion: load.country,
+                country: country,
                 userId: userId,
                 placementId,
                 watchTimeStart,

@@ -5,6 +5,7 @@ export default interface Event {
     eventTypeName: EventTypeName;
     eventTypeId: EventTypeId;
     campaignId: string;
+    mobileRegion: string;
     country: string;
     city: string;
     ip: string;
