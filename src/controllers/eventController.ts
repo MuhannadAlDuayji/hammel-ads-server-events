@@ -96,6 +96,7 @@ class EventController {
             const event: Event = {
                 loadId,
                 city: city,
+                ip: clientIp || "none",
                 eventTypeId,
                 eventTypeName,
                 campaignId: load.campaignId,
