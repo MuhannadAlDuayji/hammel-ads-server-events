@@ -7,6 +7,7 @@ export default interface Campaign {
     endDate: Date;
     budget: number;
     country: string;
+    targetedCities: string[];
     photoPath: string;
     link: string;
     campaignStatusName: CampaignStatusName;

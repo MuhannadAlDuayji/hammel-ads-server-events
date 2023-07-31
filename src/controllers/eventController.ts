@@ -8,13 +8,7 @@ import { EventTypeId, EventTypeName } from "../types/event/EventType";
 import Load from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
 import EventQueue from "../utils/EventQueue";
-import {
-    IP2Location,
-    IP2LocationWebService,
-    IPTools,
-    Country,
-    Region,
-} from "ip2location-nodejs";
+import { IP2Location } from "ip2location-nodejs";
 import requestIP from "request-ip";
 let ip2location = new IP2Location();
 
@@ -100,7 +94,7 @@ class EventController {
             const event: Event = {
                 loadId,
                 city: city,
-                ip: clientIp || "none",
+                ip: clientIp || "Unknown",
                 eventTypeId,
                 eventTypeName,
                 campaignId: load.campaignId,

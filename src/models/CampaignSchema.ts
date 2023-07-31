@@ -24,6 +24,10 @@ const campaignSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    targetedCities: {
+        type: [String],
+        default: [],
+    },
     photoPath: {
         type: String,
         required: true,
