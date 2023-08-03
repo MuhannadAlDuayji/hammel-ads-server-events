@@ -5,7 +5,11 @@ import { CampaignStatusId } from "../types/campaign/CampaignStatus";
 import Campaign from "../models/CampaignSchema";
 import loadSchema from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
+import { IP2Location } from "ip2location-nodejs";
+import requestIP from "request-ip";
+let ip2location = new IP2Location();
 
+ip2location.open(`${__dirname}/../static/IP2LOCATION-LITE-DB3.BIN`);
 class LoadController {
     static load = async (req: Request, res: Response) => {
         try {
@@ -22,6 +26,14 @@ class LoadController {
             }
 
             const { deviceId, placementId, region } = req.body;
+
+            const clientIp = requestIP.getClientIp(req);
+
+            let loadCity = "Unknown";
+            if (clientIp) {
+                loadCity = ip2location.getCity(clientIp);
+                console.log("loadCity : ", loadCity);
+            }
 
             // filter campaigns with show period startDate >= now >= endDate
 
@@ -81,8 +93,9 @@ class LoadController {
 
                     if (
                         totalCost <= campaign.budget &&
-                        (campaign.country.toLowerCase() ===
-                            regionNames.of(region)?.toLowerCase() ||
+                        ((campaign.country.toLowerCase() ===
+                            regionNames.of(region)?.toLowerCase() &&
+                            campaign.targetedCities.includes(loadCity)) ||
                             campaign.country.toLowerCase() ===
                                 "all countries") &&
                         !viewedInPastDayPromise
