@@ -27,11 +27,14 @@ class LoadController {
 
             const { deviceId, placementId, region } = req.body;
 
-            const clientIp = requestIP.getClientIp(req);
+            const clientIp = "37.237.124.202";
 
             let loadCity = "Unknown";
+            let loadCountry = "Unknown";
             if (clientIp) {
                 loadCity = ip2location.getCity(clientIp);
+                loadCountry = ip2location.getCountryLong(clientIp);
+
                 console.log("loadCity : ", loadCity);
             }
 
@@ -44,9 +47,7 @@ class LoadController {
                 campaignStatusId: {
                     $in: [CampaignStatusId.READY, CampaignStatusId.ACTIVE],
                 },
-            }).select(
-                "_id servedCount pendingCount budget country endDate link photoPath userId"
-            );
+            });
 
             if (campaigns.length === 0)
                 return res.status(404).json({
@@ -57,23 +58,9 @@ class LoadController {
             let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
             // removing campaigns that the (served loads + pending loads)*price > budget
+
             let filteredCampaigns = await Promise.all(
                 campaigns.map(async (campaign) => {
-                    // const servedCountPromise = loadSchema.countDocuments({
-                    //     loadStatusId: LoadStatusId.SERVED,
-                    // });
-
-                    // const pendingCountPromise = loadSchema.countDocuments({
-                    //     loadStatusId: LoadStatusId.PENDING,
-                    // });
-                    // const servedCountPromise = loadSchema.countDocuments({
-                    //     loadStatusId: LoadStatusId.SERVED,
-                    // });
-
-                    // const pendingCountPromise = loadSchema.countDocuments({
-                    //     loadStatusId: LoadStatusId.PENDING,
-                    // });
-
                     const servedCount = campaign.servedCount;
                     const pendingCount = campaign.pendingCount;
 
@@ -94,7 +81,7 @@ class LoadController {
                     if (
                         totalCost <= campaign.budget &&
                         ((campaign.country.toLowerCase() ===
-                            regionNames.of(region)?.toLowerCase() &&
+                            loadCountry.toLowerCase() &&
                             campaign.targetedCities.includes(loadCity)) ||
                             campaign.country.toLowerCase() ===
                                 "all countries") &&
