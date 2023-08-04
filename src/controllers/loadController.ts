@@ -27,7 +27,7 @@ class LoadController {
 
             const { deviceId, placementId, region } = req.body;
 
-            const clientIp = "37.237.124.202";
+            const clientIp = requestIP.getClientIp(req);
 
             let loadCity = "Unknown";
             let loadCountry = "Unknown";
