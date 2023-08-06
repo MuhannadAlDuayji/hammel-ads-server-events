@@ -8,7 +8,6 @@ export default interface Event {
     mobileRegion: string;
     country: string;
     city: string;
-    ip: string;
     userId: string;
     placementId: string;
     watchTimeStart: number | null;
