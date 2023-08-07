@@ -34,9 +34,14 @@ class LoadController {
             if (clientIp) {
                 loadCity = ip2location.getCity(clientIp);
                 loadCountry = ip2location.getCountryLong(clientIp);
-
-                console.log("loadCity : ", loadCity);
             }
+
+            console.log(
+                "load country is ",
+                loadCountry,
+                " loadCity is ",
+                loadCity
+            );
 
             // filter campaigns with show period startDate >= now >= endDate
 
@@ -71,21 +76,28 @@ class LoadController {
                     const cutoffDate = new Date(
                         Date.now() - 24 * 60 * 60 * 1000
                     );
-                    const viewedInPastDayPromise = await loadSchema.findOne({
+                    const viewedInPastDay = await loadSchema.findOne({
                         deviceId: deviceId,
                         loadStatusId: LoadStatusId.SERVED,
                         campaignId: campaign._id,
                         createdAt: { $gte: cutoffDate },
                     });
 
+                    const budgetExceeded = totalCost > campaign.budget;
+
+                    const countryUnmatch =
+                        campaign.country.toLowerCase() !== "all countries" &&
+                        campaign.country.toLowerCase() !==
+                            loadCountry.toLowerCase();
+                    const cityUnmatch =
+                        !campaign.targetedCities.includes(loadCity) &&
+                        !campaign.targetedCities.includes("*");
+
                     if (
-                        totalCost <= campaign.budget &&
-                        ((campaign.country.toLowerCase() ===
-                            loadCountry.toLowerCase() &&
-                            campaign.targetedCities.includes(loadCity)) ||
-                            campaign.country.toLowerCase() ===
-                                "all countries") &&
-                        !viewedInPastDayPromise
+                        !viewedInPastDay &&
+                        !budgetExceeded &&
+                        !countryUnmatch &&
+                        !cityUnmatch
                     ) {
                         return { campaign, servedCount, pendingCount };
                     }
@@ -152,7 +164,7 @@ class LoadController {
                 placementId,
                 loadStatusId: LoadStatusId.PENDING,
                 loadStatusName: LoadStatusName.PENDING,
-                country: regionNames.of(region),
+                country: loadCountry,
                 createdAt: new Date(Date.now()),
             });
             await newLoad.save();

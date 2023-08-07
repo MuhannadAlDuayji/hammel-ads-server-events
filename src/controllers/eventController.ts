@@ -130,24 +130,6 @@ class EventController {
             });
         }
     };
-
-    private static chargeUser = async (userId: string, cost: number) => {
-        try {
-            const user = await userSchema.findById(userId);
-            if (!user) return null;
-
-            if (user.balance - cost < 0) {
-                user.balance = 0;
-            } else {
-                user.balance -= cost;
-            }
-
-            await user.save();
-            return user.balance;
-        } catch (err) {
-            return null;
-        }
-    };
 }
 
 export default EventController;
