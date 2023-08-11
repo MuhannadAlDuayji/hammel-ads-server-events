@@ -80,7 +80,8 @@ class EventQueue {
                         clicks: clicks.length,
                         views: views.length,
                         moneySpent:
-                            views.length *
+                            views.filter((event) => event.isTest === false)
+                                .length *
                             ((Number(process.env.THOUSAND_VIEWS_COST) || 1) /
                                 1000),
                     },
@@ -92,7 +93,7 @@ class EventQueue {
                 return false;
             }
             const cost =
-                views.length *
+                views.filter((event) => event.isTest === false).length *
                 ((Number(process.env.THOUSAND_VIEWS_COST) || 1) / 1000);
             const currentBalance: number | null = await this.chargeUser(
                 campaign.userId,

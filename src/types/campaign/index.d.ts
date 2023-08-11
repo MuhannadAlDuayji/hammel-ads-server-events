@@ -19,4 +19,5 @@ export default interface Campaign {
     adminMessage: string;
     servedCount: number;
     pendingCount: number;
+    testDeviceId: string;
 }

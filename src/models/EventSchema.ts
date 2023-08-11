@@ -57,6 +57,10 @@ const eventSchema = new mongoose.Schema({
         type: Date,
         required: true,
     },
+    isTest: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const Event = mongoose.model<Event & mongoose.Document>("Event", eventSchema);

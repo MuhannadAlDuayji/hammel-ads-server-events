@@ -105,6 +105,7 @@ class EventController {
                 watchTimeEnd,
                 watchTime,
                 createdAt: new Date(Date.now()),
+                isTest: load.isTest,
             };
 
             EventQueue.enqueue(event);

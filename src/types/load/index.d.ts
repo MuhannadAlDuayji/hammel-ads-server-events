@@ -9,4 +9,5 @@ export default interface Load {
     campaignId: string;
     createdAt: Date;
     country: string;
+    isTest: boolean;
 }

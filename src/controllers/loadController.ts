@@ -46,19 +46,68 @@ class LoadController {
             // filter campaigns with show period startDate >= now >= endDate
 
             const now = new Date();
-            const campaigns = await Campaign.find({
+            let queryConditions: any = {
                 startDate: { $lte: now },
                 endDate: { $gte: now },
                 campaignStatusId: {
                     $in: [CampaignStatusId.READY, CampaignStatusId.ACTIVE],
                 },
+            };
+            const campaignWithDeviceIdAsTest = await Campaign.findOne({
+                testDeviceId: deviceId,
             });
+            if (campaignWithDeviceIdAsTest) {
+                queryConditions.userId = campaignWithDeviceIdAsTest.userId;
+                queryConditions.campaignStatusId = {
+                    $in: [
+                        CampaignStatusId.READY,
+                        CampaignStatusId.ACTIVE,
+                        CampaignStatusId.INREVIEW,
+                    ],
+                };
+            }
+
+            const campaigns = await Campaign.find(queryConditions);
 
             if (campaigns.length === 0)
                 return res.status(404).json({
                     status: "error",
                     message: "no campaigns to load",
                 });
+
+            // if there is a campaign where testDeviceId === deviceId load one of the user campaigns which are valid
+
+            if (campaignWithDeviceIdAsTest) {
+                const randomIndex = Math.floor(
+                    Math.random() * campaigns.length
+                );
+                const selectedCampaign = campaigns[randomIndex];
+                const newLoad = new loadSchema({
+                    campaignId: selectedCampaign._id,
+                    deviceId,
+                    placementId,
+                    loadStatusId: LoadStatusId.PENDING,
+                    loadStatusName: LoadStatusName.PENDING,
+                    country: loadCountry,
+                    createdAt: new Date(Date.now()),
+                    isTest: true,
+                });
+                await newLoad.save();
+
+                res.status(200).json({
+                    status: "success",
+                    data: {
+                        loadId: newLoad._id,
+                        url: selectedCampaign.link,
+                        img: selectedCampaign.photoPath,
+                        userId: selectedCampaign.userId,
+                        campaignId: selectedCampaign._id,
+                        country: newLoad.country,
+                        createdAt: newLoad.createdAt,
+                    },
+                });
+                return campaigns[randomIndex];
+            }
 
             let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
@@ -91,7 +140,8 @@ class LoadController {
                             loadCountry.toLowerCase();
                     const cityUnmatch =
                         !campaign.targetedCities.includes(loadCity) &&
-                        !campaign.targetedCities.includes("*");
+                        !campaign.targetedCities.includes("*") &&
+                        campaign.country.toLowerCase() !== "all countries";
 
                     if (
                         !viewedInPastDay &&

@@ -14,4 +14,5 @@ export default interface Event {
     watchTimeEnd: number | null;
     watchTime: number | null;
     createdAt: Date;
+    isTest: boolean;
 }

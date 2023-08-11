@@ -80,6 +80,10 @@ const campaignSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    testDeviceId: {
+        type: String,
+        default: "",
+    },
 });
 
 const Campaign = mongoose.model<Campaign & mongoose.Document>(
