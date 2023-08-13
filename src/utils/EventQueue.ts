@@ -1,5 +1,4 @@
 import Event from "../types/event";
-import EventSchema from "../models/EventSchema";
 import CampaignSchema from "../models/CampaignSchema";
 import {
     CampaignStatusId,
@@ -46,8 +45,7 @@ class EventQueue {
                 );
                 await this.updateCampaign(campaigns[i], campaignEvents);
             }
-
-            await EventSchema.insertMany(eventsToSave);
+            // await EventSchema.insertMany(eventsToSave);
             await insertTimeSeriesData(eventsToSave);
             console.log(`${eventsToSave.length} events saved to the database.`);
         } catch (error) {
