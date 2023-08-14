@@ -18,28 +18,8 @@ let ip2location = new IP2Location();
 ip2location.open(`${__dirname}/../static/IP2LOCATION-LITE-DB3.BIN`);
 
 class EventController {
-    private static client: MongoClient | null = null;
-
-    private static async getClient() {
-        if (!EventController.client) {
-            EventController.client = new MongoClient(
-                process.env.URI_STRING || ""
-            );
-            await EventController.client.connect();
-        }
-        return EventController.client;
-    }
-
-    private static async closeClient() {
-        if (EventController.client) {
-            await EventController.client.close();
-            EventController.client = null;
-        }
-    }
     static save = async (req: Request, res: Response) => {
-        let client;
         try {
-            client = await EventController.getClient();
             const validationResults = validationResult(
                 req
             ) as unknown as ValidationResult;
@@ -140,7 +120,7 @@ class EventController {
             }
 
             // save event
-
+            const client = new MongoClient(process.env.URI_STRING || "");
             const db = client.db();
             const timeSeriesCollection = db.collection("eventsTimeSeries");
 
@@ -222,6 +202,8 @@ class EventController {
                 );
             }
 
+            await client.close();
+
             // Same as before
             return res.status(200).json({
                 status: "success",
@@ -234,8 +216,6 @@ class EventController {
                 status: "error",
                 message: "internal server error",
             });
-        } finally {
-            await EventController.closeClient();
         }
     };
     static getHour = (createdAt: Date) => {
