@@ -45,9 +45,9 @@ class EventQueue {
                 );
                 await this.updateCampaign(campaigns[i], campaignEvents);
             }
-            // await EventSchema.insertMany(eventsToSave);
-            await insertTimeSeriesData(eventsToSave);
-            console.log(`${eventsToSave.length} events saved to the database.`);
+            console.log(
+                `${eventsToSave.length} events information updated in the database.`
+            );
         } catch (error) {
             console.error("Error saving events:", error);
             this.events.unshift(...eventsToSave); // Put the unsaved events back to the front of the queue
@@ -153,3 +153,29 @@ class EventQueue {
 }
 
 export default new EventQueue();
+
+/*
+
+adding documents for each hour with lables and counters
+
+{
+createdAt: 2023-07-20T12:51:43, createdAt >=2023-07-20T12:00:00 creat<2023-07-20T13:00:00
+gender: "female"
+campaignId: test,
+country: "saudi arabia"
+city: "riadh"
+views: 1,
+clicks: 1
+}
+
+{
+createdAt: ...,
+gender: "male"
+campaignId: test,
+country: "saudi arabia"
+city: "riadh"
+views: 1,
+clicks: 1
+}
+
+*/

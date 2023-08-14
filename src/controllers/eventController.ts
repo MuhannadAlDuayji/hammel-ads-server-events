@@ -7,16 +7,39 @@ import Event from "../types/event";
 import { EventTypeId, EventTypeName } from "../types/event/EventType";
 import Load from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
+import { MongoClient } from "mongodb";
 import EventQueue from "../utils/EventQueue";
 import { IP2Location } from "ip2location-nodejs";
 import requestIP from "request-ip";
+import Dataset from "../types/dataset";
+
 let ip2location = new IP2Location();
 
 ip2location.open(`${__dirname}/../static/IP2LOCATION-LITE-DB3.BIN`);
 
 class EventController {
+    private static client: MongoClient | null = null;
+
+    private static async getClient() {
+        if (!EventController.client) {
+            EventController.client = new MongoClient(
+                process.env.URI_STRING || ""
+            );
+            await EventController.client.connect();
+        }
+        return EventController.client;
+    }
+
+    private static async closeClient() {
+        if (EventController.client) {
+            await EventController.client.close();
+            EventController.client = null;
+        }
+    }
     static save = async (req: Request, res: Response) => {
+        let client;
         try {
+            client = await EventController.getClient();
             const validationResults = validationResult(
                 req
             ) as unknown as ValidationResult;
@@ -109,12 +132,94 @@ class EventController {
             };
 
             EventQueue.enqueue(event);
-
             if (event.eventTypeId === EventTypeId.VIEW) {
                 await load.updateOne({
                     loadStatusId: LoadStatusId.SERVED,
                     loadStatusName: LoadStatusName.SERVED,
                 });
+            }
+
+            // save event
+
+            const db = client.db();
+            const timeSeriesCollection = db.collection("eventsTimeSeries");
+
+            const { startHour, endHour } = this.getHour(event.createdAt);
+            const existingDataset = await timeSeriesCollection.findOne({
+                createdAt: { $gte: startHour, $lte: endHour },
+                campaignId: event.campaignId,
+                country: event.country,
+                city: event.city,
+            });
+
+            if (!existingDataset) {
+                const newDataset: Dataset = {
+                    createdAt: new Date(),
+                    campaignId: load.campaignId,
+                    country,
+                    city,
+                    views: 0,
+                    clicks: 0,
+                    closes: 0,
+                    averageClickWatchTime: null,
+                    averageCloseWatchTime: null,
+                };
+                switch (event.eventTypeId) {
+                    case 1:
+                        newDataset.views = 1;
+                        break;
+                    case 2:
+                        newDataset.clicks = 1;
+                        newDataset.averageClickWatchTime = watchTime;
+                        break;
+                    case 3:
+                        newDataset.closes = 1;
+                        newDataset.averageCloseWatchTime = watchTime;
+                        break;
+                }
+                await timeSeriesCollection.insertOne(newDataset);
+            } else {
+                switch (event.eventTypeId) {
+                    case 1:
+                        existingDataset.views += 1;
+                        break;
+                    case 2:
+                        if (existingDataset.averageClickWatchTime === null) {
+                            existingDataset.averageClickWatchTime = watchTime;
+                        } else {
+                            const newAverageWatchTime =
+                                (existingDataset.averageClickWatchTime *
+                                    existingDataset.clicks +
+                                    Number(event.watchTime)) /
+                                (existingDataset.clicks + 1);
+
+                            existingDataset.averageClickWatchTime =
+                                newAverageWatchTime;
+                        }
+                        existingDataset.clicks += 1;
+
+                        break;
+                    case 3:
+                        if (existingDataset.averageCloseWatchTime === null) {
+                            existingDataset.averageCloseWatchTime = watchTime;
+                        } else {
+                            const newAverageWatchTime =
+                                (existingDataset.averageCloseWatchTime *
+                                    existingDataset.closes +
+                                    Number(event.watchTime)) /
+                                (existingDataset.closes + 1);
+
+                            existingDataset.averageCloseWatchTime =
+                                newAverageWatchTime;
+                        }
+                        existingDataset.closes += 1;
+                        break;
+                }
+
+                await timeSeriesCollection.updateOne(
+                    { _id: existingDataset._id }, // Assuming _id is the identifier for the document
+                    { $set: existingDataset }
+                );
             }
 
             // Same as before
@@ -129,7 +234,22 @@ class EventController {
                 status: "error",
                 message: "internal server error",
             });
+        } finally {
+            await EventController.closeClient();
         }
+    };
+    static getHour = (createdAt: Date) => {
+        const startHour = new Date(createdAt);
+        startHour.setMinutes(0);
+        startHour.setSeconds(0);
+        startHour.setMilliseconds(0);
+
+        const endHour = new Date(createdAt);
+        endHour.setMinutes(59);
+        endHour.setSeconds(59);
+        endHour.setMilliseconds(999);
+
+        return { startHour, endHour };
     };
 }
 

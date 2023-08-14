@@ -28,7 +28,7 @@ async function createTimeSeriesCollection() {
             await db.createCollection("eventsTimeSeries", {
                 timeseries: {
                     timeField: "createdAt",
-                    //   metaField: 'tags',
+                    metaField: "campaignId",
                 },
             });
         }
