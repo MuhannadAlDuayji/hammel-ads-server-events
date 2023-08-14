@@ -111,6 +111,10 @@ class EventController {
                 isTest: load.isTest,
             };
 
+            if (Number(event.watchTime) > 100) {
+                console.log(event);
+            }
+
             EventQueue.enqueue(event);
             if (event.eventTypeId === EventTypeId.VIEW) {
                 await load.updateOne({
