@@ -24,6 +24,7 @@ export default interface IUser extends mongoose.Document {
     transactions: Transaction[];
     totalAmountCharged: number;
     bonusAdded: boolean;
+    discount: number;
     generateAuthToken: () => string;
     generateConfirmationToken: () => string;
 }

@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema({
         type: Array<Transaction>,
         default: [],
     },
+    discount: {
+        type: Number,
+        default: 0,
+    },
 });
 const User = mongoose.model<IUser>("User", userSchema);
 

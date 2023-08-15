@@ -6,7 +6,6 @@ import {
 } from "../types/campaign/CampaignStatus";
 import { EventTypeId } from "../types/event/EventType";
 import User from "../models/UserSchema";
-import { insertTimeSeriesData } from "../services/db";
 
 class EventQueue {
     private events: Event[];
@@ -63,9 +62,17 @@ class EventQueue {
             const clicks: Event[] = campaignEvents.filter(
                 (event: Event) => event.eventTypeId === EventTypeId.CLICK
             );
-            // const closes: Event[] = campaignEvents.filter(
-            //     (event: Event) => event.eventTypeId === EventTypeId.CLOSE
-            // );
+
+            let cost = 0;
+
+            for (let i = 0; i < views.length; i++) {
+                const view = views[i];
+                const oneViewCost =
+                    (Number(process.env.THOUSAND_VIEWS_COST) || 1) / 1000;
+                if (!view.isTest) {
+                    cost += oneViewCost - oneViewCost * view.discount;
+                }
+            }
 
             const campaign = await CampaignSchema.findByIdAndUpdate(
                 campaignId,
@@ -77,11 +84,7 @@ class EventQueue {
                     $inc: {
                         clicks: clicks.length,
                         views: views.length,
-                        moneySpent:
-                            views.filter((event) => event.isTest === false)
-                                .length *
-                            ((Number(process.env.THOUSAND_VIEWS_COST) || 1) /
-                                1000),
+                        moneySpent: cost,
                     },
                 },
                 { new: true }
@@ -90,9 +93,7 @@ class EventQueue {
             if (!campaign) {
                 return false;
             }
-            const cost =
-                views.filter((event) => event.isTest === false).length *
-                ((Number(process.env.THOUSAND_VIEWS_COST) || 1) / 1000);
+
             const currentBalance: number | null = await this.chargeUser(
                 campaign.userId,
                 cost

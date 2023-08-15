@@ -12,6 +12,7 @@ import EventQueue from "../utils/EventQueue";
 import { IP2Location } from "ip2location-nodejs";
 import requestIP from "request-ip";
 import Dataset from "../types/dataset";
+import User from "../models/UserSchema";
 
 let ip2location = new IP2Location();
 
@@ -56,6 +57,14 @@ class EventController {
                 return res.status(404).json({
                     status: "error",
                     message: "load not found",
+                });
+            }
+
+            const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "user not found",
                 });
             }
             // Map the type string to the corresponding eventTypeName and eventTypeId
@@ -109,6 +118,7 @@ class EventController {
                 watchTime,
                 createdAt: new Date(Date.now()),
                 isTest: load.isTest,
+                discount: user.discount,
             };
 
             if (Number(event.watchTime) > 100) {

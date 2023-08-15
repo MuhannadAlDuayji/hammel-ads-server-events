@@ -15,4 +15,5 @@ export default interface Event {
     watchTime: number | null;
     createdAt: Date;
     isTest: boolean;
+    discount: number;
 }
