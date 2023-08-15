@@ -42,7 +42,13 @@ class EventQueue {
                 const campaignEvents: Event[] = eventsToSave.filter(
                     (event: Event) => event.campaignId === campaigns[i]
                 );
-                await this.updateCampaign(campaigns[i], campaignEvents);
+                const result = await this.updateCampaign(
+                    campaigns[i],
+                    campaignEvents
+                );
+                if (!result) {
+                    console.error("errorrrrrrrrrrrr happeneddddddddddd");
+                }
             }
             console.log(
                 `${eventsToSave.length} events information updated in the database.`
