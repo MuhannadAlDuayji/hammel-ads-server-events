@@ -77,10 +77,6 @@ class EventQueue {
             const campaign = await CampaignSchema.findByIdAndUpdate(
                 campaignId,
                 {
-                    $set: {
-                        campaignStatusName: CampaignStatusName.ACTIVE,
-                        campaignStatusId: CampaignStatusId.ACTIVE,
-                    },
                     $inc: {
                         clicks: clicks.length,
                         views: views.length,
@@ -113,6 +109,11 @@ class EventQueue {
                 await campaign.updateOne({
                     campaignStatusName: CampaignStatusName.WAITINGFORFUNDS,
                     campaignStatusId: CampaignStatusId.WAITINGFORFUNDS,
+                });
+            } else if (campaign.campaignStatusId === CampaignStatusId.READY) {
+                await campaign.updateOne({
+                    campaignStatusName: CampaignStatusName.ACTIVE,
+                    campaignStatusId: CampaignStatusId.ACTIVE,
                 });
             }
 
@@ -154,29 +155,3 @@ class EventQueue {
 }
 
 export default new EventQueue();
-
-/*
-
-adding documents for each hour with lables and counters
-
-{
-createdAt: 2023-07-20T12:51:43, createdAt >=2023-07-20T12:00:00 creat<2023-07-20T13:00:00
-gender: "female"
-campaignId: test,
-country: "saudi arabia"
-city: "riadh"
-views: 1,
-clicks: 1
-}
-
-{
-createdAt: ...,
-gender: "male"
-campaignId: test,
-country: "saudi arabia"
-city: "riadh"
-views: 1,
-clicks: 1
-}
-
-*/
