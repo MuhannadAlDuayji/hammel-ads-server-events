@@ -101,6 +101,7 @@ class EventQueue {
                 cost
             );
             if (currentBalance === null) {
+                console.log("error chargin balance");
                 return false;
             }
 
@@ -137,6 +138,7 @@ class EventQueue {
             });
             await campaign.save();
         } catch (err) {
+            console.log("errorr ", err);
             return false;
         }
     }
@@ -155,6 +157,7 @@ class EventQueue {
             await user.save();
             return user.balance;
         } catch (err) {
+            console.log(err);
             return null;
         }
     }
