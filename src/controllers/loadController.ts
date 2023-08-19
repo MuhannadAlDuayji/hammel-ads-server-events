@@ -35,14 +35,6 @@ class LoadController {
                 loadCity = ip2location.getCity(clientIp);
                 loadCountry = ip2location.getCountryLong(clientIp);
             }
-
-            console.log(
-                "load country is ",
-                loadCountry,
-                " loadCity is ",
-                loadCity
-            );
-
             // filter campaigns with show period startDate >= now >= endDate
 
             const now = new Date();
@@ -108,8 +100,6 @@ class LoadController {
                 });
                 return campaigns[randomIndex];
             }
-
-            let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
             // removing campaigns that the (served loads + pending loads)*price > budget
 

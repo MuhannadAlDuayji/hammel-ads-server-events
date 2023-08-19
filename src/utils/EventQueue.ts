@@ -157,7 +157,7 @@ class EventQueue {
             await user.save();
             return user.balance;
         } catch (err) {
-            console.log(err);
+            console.log("error ", err);
             return null;
         }
     }

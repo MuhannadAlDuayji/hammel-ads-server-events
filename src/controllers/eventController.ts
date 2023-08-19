@@ -98,9 +98,6 @@ class EventController {
             if (clientIp) {
                 city = ip2location.getCity(clientIp);
                 country = ip2location.getCountryLong(clientIp);
-                console.log("ip -> ", clientIp);
-                console.log("city -> ", city);
-                console.log("country -> ", country);
             }
 
             const event: Event = {
@@ -211,14 +208,13 @@ class EventController {
                 }
 
                 await timeSeriesCollection.updateOne(
-                    { _id: existingDataset._id }, // Assuming _id is the identifier for the document
+                    { _id: existingDataset._id },
                     { $set: existingDataset }
                 );
             }
 
             await client.close();
 
-            // Same as before
             return res.status(200).json({
                 status: "success",
                 message: "event saved",
