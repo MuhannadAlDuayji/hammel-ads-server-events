@@ -118,7 +118,7 @@ class EventController {
                 discount: user.discount,
             };
 
-            if (Number(event.watchTime) > 100) {
+            if (Number(event.watchTime) > 1000) {
                 console.log(event);
             }
 
