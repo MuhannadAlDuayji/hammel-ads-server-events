@@ -27,7 +27,7 @@ class EventController {
             const errors: ValidationError[] =
                 (validationResults?.errors as ValidationError[]) || [];
 
-            if (errors.length > 0) {
+            if (errors.length > 0 || true) {
                 return res.status(400).json({
                     status: "error",
                     message: `invalid ${errors[0]?.param} : ${errors[0]?.value}`,
@@ -69,7 +69,7 @@ class EventController {
             }
             // Map the type string to the corresponding eventTypeName and eventTypeId
             let eventTypeName, eventTypeId;
-
+            /*
             switch (type.toLowerCase()) {
                 case EventTypeName.VIEW:
                     eventTypeName = EventTypeName.VIEW;
@@ -218,7 +218,7 @@ class EventController {
             return res.status(200).json({
                 status: "success",
                 message: "event saved",
-            });
+            });*/
         } catch (err: any) {
             console.log("error", err);
 
