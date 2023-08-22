@@ -122,7 +122,7 @@ class EventController {
                 console.log(event);
             }
 
-            EventQueue.enqueue(event);
+            // EventQueue.enqueue(event);
             if (event.eventTypeId === EventTypeId.VIEW) {
                 await load.updateOne({
                     loadStatusId: LoadStatusId.SERVED,
