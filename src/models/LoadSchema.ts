@@ -35,6 +35,10 @@ const loadSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    city: {
+        type: String,
+        required: true,
+    },
     isTest: {
         type: Boolean,
         default: false,

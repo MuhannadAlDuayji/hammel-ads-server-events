@@ -9,14 +9,8 @@ import Load from "../models/LoadSchema";
 import { LoadStatusId, LoadStatusName } from "../types/load/LoadStatus";
 import { MongoClient } from "mongodb";
 import EventQueue from "../utils/EventQueue";
-import { IP2Location } from "ip2location-nodejs";
-import requestIP from "request-ip";
 import Dataset from "../types/dataset";
 import User from "../models/UserSchema";
-
-let ip2location = new IP2Location();
-
-ip2location.open(`${__dirname}/../static/IP2LOCATION-LITE-DB3.BIN`);
 
 class EventController {
     static save = async (req: Request, res: Response) => {
@@ -27,7 +21,7 @@ class EventController {
             const errors: ValidationError[] =
                 (validationResults?.errors as ValidationError[]) || [];
 
-            if (errors.length > 0 || true) {
+            if (errors.length > 0) {
                 return res.status(400).json({
                     status: "error",
                     message: `invalid ${errors[0]?.param} : ${errors[0]?.value}`,
@@ -69,7 +63,7 @@ class EventController {
             }
             // Map the type string to the corresponding eventTypeName and eventTypeId
             let eventTypeName, eventTypeId;
-            /*
+
             switch (type.toLowerCase()) {
                 case EventTypeName.VIEW:
                     eventTypeName = EventTypeName.VIEW;
@@ -91,23 +85,13 @@ class EventController {
                     });
             }
 
-            const clientIp = requestIP.getClientIp(req);
-
-            let city = "Unknown";
-            let country = "Unknown";
-            if (clientIp) {
-                city = ip2location.getCity(clientIp);
-                country = ip2location.getCountryLong(clientIp);
-            }
-
             const event: Event = {
                 loadId,
-                city: city,
+                city: load.city,
                 eventTypeId,
                 eventTypeName,
                 campaignId: load.campaignId,
-                mobileRegion: load.country,
-                country: country,
+                country: load.country,
                 userId: userId,
                 placementId,
                 watchTimeStart,
@@ -147,8 +131,8 @@ class EventController {
                 const newDataset: Dataset = {
                     createdAt: new Date(),
                     campaignId: load.campaignId,
-                    country,
-                    city,
+                    country: load.country,
+                    city: load.city,
                     views: 0,
                     clicks: 0,
                     closes: 0,
@@ -218,7 +202,7 @@ class EventController {
             return res.status(200).json({
                 status: "success",
                 message: "event saved",
-            });*/
+            });
         } catch (err: any) {
             console.log("error", err);
 

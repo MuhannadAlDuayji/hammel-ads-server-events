@@ -81,6 +81,7 @@ class LoadController {
                     loadStatusId: LoadStatusId.PENDING,
                     loadStatusName: LoadStatusName.PENDING,
                     country: loadCountry,
+                    city: loadCity,
                     createdAt: new Date(Date.now()),
                     isTest: true,
                 });
@@ -95,6 +96,7 @@ class LoadController {
                         userId: selectedCampaign.userId,
                         campaignId: selectedCampaign._id,
                         country: newLoad.country,
+                        city: newLoad.city,
                         createdAt: newLoad.createdAt,
                     },
                 });
