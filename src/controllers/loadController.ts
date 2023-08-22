@@ -207,6 +207,7 @@ class LoadController {
                 loadStatusId: LoadStatusId.PENDING,
                 loadStatusName: LoadStatusName.PENDING,
                 country: loadCountry,
+                city: loadCity,
                 createdAt: new Date(Date.now()),
             });
             await newLoad.save();

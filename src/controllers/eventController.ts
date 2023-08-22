@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import userSchema from "../models/UserSchema";
 import { ValidationError, ValidationResult } from "../types/validation";
 import { validationResult } from "express-validator";
 import { isValidObjectId } from "mongoose";
