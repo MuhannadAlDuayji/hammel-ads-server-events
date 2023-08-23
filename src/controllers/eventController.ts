@@ -119,13 +119,14 @@ class EventController {
             const timeSeriesCollection = db.collection("eventsTimeSeries");
 
             const { startHour, endHour } = this.getHour(event.createdAt);
-            // const existingDataset = await timeSeriesCollection.findOne({
-            //     createdAt: { $gte: startHour, $lte: endHour },
-            //     campaignId: event.campaignId,
-            //     country: event.country,
-            //     city: event.city,
-            // });
-            /*
+
+            const existingDataset = await timeSeriesCollection.findOne({
+                createdAt: { $gte: startHour, $lte: endHour },
+                campaignId: event.campaignId,
+                country: event.country,
+                city: event.city,
+            });
+
             if (!existingDataset) {
                 const newDataset: Dataset = {
                     createdAt: new Date(),
@@ -151,7 +152,7 @@ class EventController {
                         newDataset.averageCloseWatchTime = watchTime;
                         break;
                 }
-                // await timeSeriesCollection.insertOne(newDataset);
+                await timeSeriesCollection.insertOne(newDataset);
             } else {
                 switch (event.eventTypeId) {
                     case 1:
@@ -190,12 +191,11 @@ class EventController {
                         break;
                 }
 
-                await timeSeriesCollection.updateOne(
-                    { _id: existingDataset._id },
-                    { $set: existingDataset }
-                );
+                // await timeSeriesCollection.updateOne(
+                //     { _id: existingDataset._id },
+                //     { $set: existingDataset }
+                // );
             }
-            */
             await client.close();
 
             return res.status(200).json({
