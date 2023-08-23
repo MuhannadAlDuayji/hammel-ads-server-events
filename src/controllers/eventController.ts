@@ -118,10 +118,10 @@ class EventController {
             const db = client.db();
             const timeSeriesCollection = db.collection("eventsTimeSeries");
 
-            const { startHour, endHour } = this.getHour(event.createdAt);
-
+            // const { startHour, endHour } = this.getHour(event.createdAt);
+            const { startOfDay, endOfDay } = this.getDay(event.createdAt);
             const existingDataset = await timeSeriesCollection.findOne({
-                createdAt: { $gte: startHour, $lte: endHour },
+                createdAt: { $gte: startOfDay, $lte: endOfDay },
                 campaignId: event.campaignId,
                 country: event.country,
                 city: event.city,
@@ -191,10 +191,10 @@ class EventController {
                         break;
                 }
 
-                // await timeSeriesCollection.updateOne(
-                //     { _id: existingDataset._id },
-                //     { $set: existingDataset }
-                // );
+                await timeSeriesCollection.updateOne(
+                    { _id: existingDataset._id },
+                    { $set: existingDataset }
+                );
             }
             await client.close();
 
@@ -223,6 +223,15 @@ class EventController {
         endHour.setMilliseconds(999);
 
         return { startHour, endHour };
+    };
+    static getDay = (date: Date) => {
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        return { startOfDay, endOfDay };
     };
 }
 
