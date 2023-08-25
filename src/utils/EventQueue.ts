@@ -29,9 +29,9 @@ class EventQueue {
     }
 
     private async saveEvents() {
-        // if (this.events.length === 0) {
-        //     return;
-        // }
+        if (this.events.length === 0) {
+            return;
+        }
 
         const eventsToSave = this.events.slice();
         this.events = [];
