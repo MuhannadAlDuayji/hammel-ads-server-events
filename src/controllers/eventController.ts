@@ -101,9 +101,9 @@ class EventController {
                 discount: user.discount,
             };
 
-            if (Number(event.watchTime) > 1000) {
-                console.log(event);
-            }
+            // if (Number(event.watchTime) > 1000) {
+            //     console.log(event);
+            // }
 
             EventQueue.enqueue(event);
             if (event.eventTypeId === EventTypeId.VIEW) {
@@ -119,34 +119,11 @@ class EventController {
             });
         } catch (err: any) {
             console.log("error", err);
-
             res.status(500).json({
                 status: "error",
                 message: "internal server error",
             });
         }
-    };
-    static getHour = (createdAt: Date) => {
-        const startHour = new Date(createdAt);
-        startHour.setMinutes(0);
-        startHour.setSeconds(0);
-        startHour.setMilliseconds(0);
-
-        const endHour = new Date(createdAt);
-        endHour.setMinutes(59);
-        endHour.setSeconds(59);
-        endHour.setMilliseconds(999);
-
-        return { startHour, endHour };
-    };
-    static getDay = (date: Date) => {
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
-
-        const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
-
-        return { startOfDay, endOfDay };
     };
 }
 

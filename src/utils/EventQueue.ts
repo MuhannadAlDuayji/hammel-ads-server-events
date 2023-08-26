@@ -154,6 +154,7 @@ class EventQueue {
             console.log(
                 `${eventsToSave.length} events information updated in the database.`
             );
+            await client.close();
         } catch (error) {
             console.error("Error saving events:", error);
             this.events.unshift(...eventsToSave); // Put the unsaved events back to the front of the queue
