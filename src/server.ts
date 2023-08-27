@@ -1,4 +1,5 @@
 import express, { Application } from "express";
+require("dotenv").config();
 import cors from "cors";
 import bodyParser from "body-parser";
 import { connection, createTimeSeriesCollection } from "./services/db";
@@ -10,8 +11,6 @@ import EventSchema from "./models/EventSchema";
 import cron from "node-cron";
 
 import helmet from "helmet";
-
-require("dotenv").config();
 
 const app: Application = express();
 

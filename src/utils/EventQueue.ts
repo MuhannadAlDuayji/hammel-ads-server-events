@@ -12,10 +12,12 @@ import Dataset from "../types/dataset";
 class EventQueue {
     private events: Event[];
     private timer: NodeJS.Timeout | null;
+    private client: MongoClient;
 
     constructor() {
         this.events = [];
         this.timer = null;
+        this.client = new MongoClient(process.env.URI_STRING || ""); // Initialize MongoClient
     }
 
     enqueue(event: Event) {
@@ -38,9 +40,9 @@ class EventQueue {
 
         try {
             // -------------- save datasets --------------
-            const client = new MongoClient(process.env.URI_STRING || "");
-            const db = client.db();
+            const db = this.client.db(); // Reuse the existing MongoClient instance
             const timeSeriesCollection = db.collection("eventsTimeSeries");
+
             const groupedEvents: Event[][] = this.groupEvents(eventsToSave);
             const now = new Date();
             const { startOfDay, endOfDay } = this.getDay(now);
@@ -154,7 +156,6 @@ class EventQueue {
             console.log(
                 `${eventsToSave.length} events information updated in the database.`
             );
-            await client.close();
         } catch (error) {
             console.error("Error saving events:", error);
             this.events.unshift(...eventsToSave); // Put the unsaved events back to the front of the queue
