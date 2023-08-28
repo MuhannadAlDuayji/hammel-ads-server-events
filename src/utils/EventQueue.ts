@@ -12,12 +12,10 @@ import Dataset from "../types/dataset";
 class EventQueue {
     private events: Event[];
     private timer: NodeJS.Timeout | null;
-    private client: MongoClient;
 
     constructor() {
         this.events = [];
         this.timer = null;
-        this.client = new MongoClient(process.env.URI_STRING || ""); // Initialize MongoClient
     }
 
     enqueue(event: Event) {
@@ -34,13 +32,13 @@ class EventQueue {
         if (this.events.length === 0) {
             return;
         }
-
         const eventsToSave = this.events.slice();
         this.events = [];
 
         try {
             // -------------- save datasets --------------
-            const db = this.client.db(); // Reuse the existing MongoClient instance
+            const client = new MongoClient(process.env.URI_STRING || "");
+            const db = client.db();
             const timeSeriesCollection = db.collection("eventsTimeSeries");
 
             const groupedEvents: Event[][] = this.groupEvents(eventsToSave);
@@ -137,6 +135,8 @@ class EventQueue {
             if (newDatasetsToInsert.length > 0) {
                 await timeSeriesCollection.insertMany(newDatasetsToInsert);
             }
+            await client.close();
+
             // -------------- update campaign information ------------
             const campaigns = [
                 ...new Set(eventsToSave.map((event) => event.campaignId)),
