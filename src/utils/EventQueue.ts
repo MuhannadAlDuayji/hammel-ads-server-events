@@ -24,7 +24,7 @@ class EventQueue {
     }
     private startTimer() {
         if (!this.timer) {
-            this.timer = setInterval(() => this.saveEvents(), 10000); // Save events every 1 minute
+            this.timer = setInterval(() => this.saveEvents(), 30000); // Save events every 1 minute
         }
     }
 
