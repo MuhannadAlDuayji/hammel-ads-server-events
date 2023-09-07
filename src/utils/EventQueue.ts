@@ -94,7 +94,7 @@ class EventQueue {
 
                     newDatasetsToInsert.push(newDataset);
                 } else {
-                    existingDataset.views += views.length;
+                    // updating watch time information
 
                     if (existingDataset.averageClickWatchTime === null) {
                         existingDataset.averageClickWatchTime =
@@ -109,7 +109,7 @@ class EventQueue {
                         existingDataset.averageClickWatchTime =
                             newAverageWatchTime;
                     }
-                    existingDataset.clicks += clicks.length;
+
                     if (existingDataset.averageCloseWatchTime === null) {
                         existingDataset.averageCloseWatchTime =
                             this.getAverageWatchTime(closes);
@@ -123,6 +123,11 @@ class EventQueue {
                         existingDataset.averageCloseWatchTime =
                             newAverageWatchTime;
                     }
+
+                    // updating views clicks closes information
+
+                    existingDataset.views += views.length;
+                    existingDataset.clicks += clicks.length;
                     existingDataset.closes += closes.length;
 
                     await timeSeriesCollection.updateOne(
@@ -289,7 +294,12 @@ class EventQueue {
     private getAverageWatchTime = (events: Event[]) => {
         if (events.length === 0) return null;
         let totalWatchTime = 0;
-        for (const event of events) {
+        // only events where watchtime < 120
+        const filteredEvents = events.filter(
+            (event: Event) => event.watchTime === null || event.watchTime < 120
+        );
+
+        for (const event of filteredEvents) {
             totalWatchTime += event.watchTime || 0; // Ensure you handle null values
         }
 
