@@ -12,6 +12,7 @@ import cron from "node-cron";
 
 import helmet from "helmet";
 import Campaign from "./models/CampaignSchema";
+import { LoadStatusId } from "./types/load/LoadStatus";
 
 const app: Application = express();
 
@@ -51,22 +52,30 @@ cron.schedule("* * * * *", async () => {
         // const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const twentyfourhoursago = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-        // const resultEvent = await EventSchema.deleteMany({
-        //     createdAt: { $lte: twentyfourhoursago },
-        // });
-
         const campaigns = await Campaign.find();
         for (const campaign of campaigns) {
             const resultLoad = await LoadSchema.deleteMany({
                 createdAt: { $lte: twentyfourhoursago },
+                loadStatusId: LoadStatusId.PENDING,
                 campaignId: campaign._id,
             });
             console.log("how many for ", campaign._id, resultLoad.deletedCount);
 
-            campaign.pendingCount =
+            const newPendingCount =
                 campaign.pendingCount - resultLoad.deletedCount;
+
+            if (campaign.pendingCount < 0) {
+                campaign.pendingCount = 0;
+            } else {
+                campaign.pendingCount = newPendingCount;
+            }
+
             await campaign.save();
         }
+
+        await EventSchema.deleteMany({
+            createdAt: { $lte: twentyfourhoursago },
+        });
 
         // console.log(`${resultEvent.deletedCount} events deleted.`);
     } catch (error) {
