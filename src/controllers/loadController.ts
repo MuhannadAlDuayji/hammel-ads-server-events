@@ -166,7 +166,11 @@ class LoadController {
                         (campaignInfo.campaign.budget /
                             Number(process.env.THOUSAND_VIEWS_COST)) *
                             1000 -
-                        campaignInfo.servedCount;
+                        (campaignInfo.servedCount + campaignInfo.pendingCount);
+
+                    // budget = 30
+                    // THOUSAND_VIEWS_COST = 1$
+                    // 30000
 
                     if (totalNeeds < 0) totalNeeds = 0;
 
@@ -175,7 +179,7 @@ class LoadController {
                     const now = new Date();
                     const diffInMs = endDate.getTime() - now.getTime();
                     const remainingMinutes = diffInMs / (1000 * 60);
-
+                    // (x * 1000)* 60
                     const campaignNeeds = totalNeeds / remainingMinutes;
 
                     if (campaignNeeds > 1) {
