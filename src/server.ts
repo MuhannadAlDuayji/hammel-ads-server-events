@@ -59,16 +59,11 @@ cron.schedule("* * * * *", async () => {
                 loadStatusId: LoadStatusId.PENDING,
                 campaignId: campaign._id,
             });
-            console.log("how many for ", campaign._id, resultLoad.deletedCount);
 
             const newPendingCount =
                 campaign.pendingCount - resultLoad.deletedCount;
 
-            if (campaign.pendingCount < 0) {
-                campaign.pendingCount = 0;
-            } else {
-                campaign.pendingCount = newPendingCount;
-            }
+            campaign.pendingCount = newPendingCount;
 
             await campaign.save();
         }
