@@ -162,27 +162,29 @@ class LoadController {
 
             const campaignArray = await Promise.all(
                 filteredCampaigns.map(async (campaignInfo: any) => {
-                    let totalNeeds =
+                    let totalCampaignExpectedViews =
                         (campaignInfo.campaign.budget /
                             Number(process.env.THOUSAND_VIEWS_COST)) *
-                            1000 -
-                        (campaignInfo.servedCount + campaignInfo.pendingCount);
+                        1000;
 
-                    // budget = 30
-                    // THOUSAND_VIEWS_COST = 1$
-                    // 30000
+                    let totalCampaignServedViews =
+                        campaignInfo.servedCount + campaignInfo.pendingCount;
 
-                    if (totalNeeds < 0) totalNeeds = 0;
-
+                    const percentageViewed =
+                        totalCampaignServedViews / totalCampaignExpectedViews;
+                    const now = new Date();
+                    const startDate = new Date(campaignInfo.campaign.startDate);
                     const endDate = new Date(campaignInfo.campaign.endDate);
 
-                    const now = new Date();
-                    const diffInMs = endDate.getTime() - now.getTime();
-                    const remainingMinutes = diffInMs / (1000 * 60);
-                    // (x * 1000)* 60
-                    const campaignNeeds = totalNeeds / remainingMinutes;
+                    const campaignLength =
+                        endDate.getTime() - startDate.getTime();
+                    const timePassed = now.getTime() - startDate.getTime();
+                    const percentagePassed = timePassed / campaignLength; // 0.2
 
-                    if (campaignNeeds > 1) {
+                    const campaignNeeds =
+                        (1 - percentageViewed) * totalCampaignExpectedViews;
+
+                    if (percentagePassed > percentageViewed) {
                         return {
                             campaign: campaignInfo.campaign,
                             campaignNeeds,

@@ -229,9 +229,9 @@ class EventQueue {
                 });
             }
 
-            console.log("campaign: ", campaign);
-            console.log("how many views: ", views.length);
-            console.log("views: ", views);
+            // console.log("campaign: ", campaign);
+            // console.log("how many views: ", views.length);
+            // console.log("views: ", views);
 
             if (campaign.pendingCount - views.length >= 0) {
                 await campaign.updateOne({
