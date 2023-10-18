@@ -235,9 +235,7 @@ class EventQueue {
             await campaign.updateOne({
                 $inc: {
                     servedCount: views.length,
-                },
-                $dec: {
-                    pendingCount: views.length,
+                    pendingCount: -views.length,
                 },
             });
 
