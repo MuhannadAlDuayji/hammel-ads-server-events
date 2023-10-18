@@ -229,15 +229,24 @@ class EventQueue {
                 });
             }
 
+            console.log("campaign: ", campaign);
             console.log("how many views: ", views.length);
-            console.log("how many views: ", views.length);
+            console.log("views: ", views);
 
-            await campaign.updateOne({
-                $inc: {
-                    servedCount: views.length,
-                    pendingCount: -views.length,
-                },
-            });
+            if (campaign.pendingCount - views.length >= 0) {
+                await campaign.updateOne({
+                    $inc: {
+                        servedCount: views.length,
+                        pendingCount: -views.length,
+                    },
+                });
+            } else {
+                campaign.servedCount = campaign.servedCount + views.length;
+                campaign.pendingCount = 0;
+                await campaign.save();
+            }
+
+            //
 
             // pendingCount =2;  servedCount = 0;
             // pendingCount = 1; servedCount = 1

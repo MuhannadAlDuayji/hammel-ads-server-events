@@ -47,24 +47,24 @@ cron.schedule("* * * * *", async () => {
         // const result = await LoadSchema.updateMany(filter, update);
         // console.log(`${result.modifiedCount} loads updated to "unvalid".`);
         // const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        // const twentyfourhoursago = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        // const campaigns = await Campaign.find();
-        // for (const campaign of campaigns) {
-        //     console.log("campaign: ", campaign);
-        //     const resultLoad = await LoadSchema.deleteMany({
-        //         createdAt: { $lte: twentyfourhoursago },
-        //         loadStatusId: LoadStatusId.PENDING,
-        //         campaignId: campaign._id,
-        //     });
-        //     console.log("loads: ", resultLoad);
-        //     const newPendingCount =
-        //         campaign.pendingCount - resultLoad.deletedCount;
-        //     campaign.pendingCount = newPendingCount;
-        //     await campaign.save();
-        // }
-        // await EventSchema.deleteMany({
-        //     createdAt: { $lte: twentyfourhoursago },
-        // });
+        const twentyfourhoursago = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const campaigns = await Campaign.find();
+        for (const campaign of campaigns) {
+            console.log("campaign: ", campaign);
+            const resultLoad = await LoadSchema.deleteMany({
+                createdAt: { $lte: twentyfourhoursago },
+                loadStatusId: LoadStatusId.PENDING,
+                campaignId: campaign._id,
+            });
+            console.log("loads: ", resultLoad);
+            const newPendingCount =
+                campaign.pendingCount - resultLoad.deletedCount;
+            campaign.pendingCount = newPendingCount;
+            await campaign.save();
+        }
+        await EventSchema.deleteMany({
+            createdAt: { $lte: twentyfourhoursago },
+        });
         // console.log(`${resultEvent.deletedCount} events deleted.`);
     } catch (error) {
         console.error(error);
