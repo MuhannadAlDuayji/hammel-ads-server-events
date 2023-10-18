@@ -167,8 +167,7 @@ class LoadController {
                             Number(process.env.THOUSAND_VIEWS_COST)) *
                         1000;
 
-                    let totalCampaignServedViews =
-                        campaignInfo.servedCount + campaignInfo.pendingCount;
+                    let totalCampaignServedViews = campaignInfo.servedCount;
 
                     const percentageViewed =
                         totalCampaignServedViews / totalCampaignExpectedViews;
