@@ -229,12 +229,25 @@ class EventQueue {
                 });
             }
 
+            console.log("how many views: ", views.length);
+            console.log("how many views: ", views.length);
+
             await campaign.updateOne({
                 $inc: {
-                    pendingCount: -views.length,
                     servedCount: views.length,
                 },
+                $dec: {
+                    pendingCount: views.length,
+                },
             });
+
+            // pendingCount =2;  servedCount = 0;
+            // pendingCount = 1; servedCount = 1
+            // after 24 hours :
+            // we found 1 load which is pending
+            // newPendingCount = pendingCount - 1
+            // pendingCount = 0; servedCount = 1
+
             await campaign.save();
             return true;
         } catch (err) {
