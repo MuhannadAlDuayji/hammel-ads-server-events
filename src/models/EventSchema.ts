@@ -37,6 +37,11 @@ const eventSchema = new mongoose.Schema({
         required: false,
         default: null,
     },
+    gender: {
+        type: String,
+        enum: ["male", "female", "unknown"],
+        required: true,
+    },
     placementId: {
         type: String,
         required: true,

@@ -10,5 +10,6 @@ export default interface Load {
     createdAt: Date;
     country: string;
     city: string;
+    gender: "male" | "female" | "unknown";
     isTest: boolean;
 }

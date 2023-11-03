@@ -92,6 +92,7 @@ class EventController {
                 campaignId: load.campaignId,
                 country: load.country,
                 userId: userId,
+                gender: load.gender,
                 placementId,
                 watchTimeStart,
                 watchTimeEnd,

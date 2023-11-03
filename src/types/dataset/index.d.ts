@@ -4,6 +4,7 @@ export default interface Dataset {
     createdAt: Date;
     campaignId: string;
     country: string;
+    gender: "male" | "female" | "unknown";
     city: string;
     views: number;
     clicks: number;

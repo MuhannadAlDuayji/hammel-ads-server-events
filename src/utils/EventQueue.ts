@@ -62,12 +62,14 @@ class EventQueue {
                     campaignId: group[0].campaignId,
                     country: group[0].country,
                     city: group[0].city,
+                    gender: group[0].gender,
                 };
                 const existingDataset = await timeSeriesCollection.findOne({
                     createdAt: { $gte: startOfDay, $lte: endOfDay },
                     campaignId: groupProprities.campaignId,
                     country: groupProprities.country,
                     city: groupProprities.city,
+                    gender: groupProprities.gender,
                 });
 
                 if (!existingDataset) {
@@ -76,6 +78,7 @@ class EventQueue {
                         campaignId: groupProprities.campaignId,
                         country: groupProprities.country,
                         city: groupProprities.city,
+                        gender: groupProprities.gender,
                         views: 0,
                         clicks: 0,
                         closes: 0,
@@ -288,8 +291,8 @@ class EventQueue {
     private groupEvents(events: Event[]) {
         const groupedEvents: any = {};
         for (const event of events) {
-            const { campaignId, country, city } = event;
-            const key = `${campaignId}-${country}-${city}`;
+            const { campaignId, country, city, gender } = event;
+            const key = `${campaignId}-${country}-${city}-${gender}`;
 
             if (!groupedEvents[key]) {
                 groupedEvents[key] = [];

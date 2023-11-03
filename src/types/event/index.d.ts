@@ -7,6 +7,7 @@ export default interface Event {
     campaignId: string;
     country: string;
     city: string;
+    gender: "male" | "female" | "unknown";
     userId: string;
     placementId: string;
     watchTimeStart: number | null;

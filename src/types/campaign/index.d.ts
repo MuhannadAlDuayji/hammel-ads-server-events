@@ -20,4 +20,5 @@ export default interface Campaign {
     servedCount: number;
     pendingCount: number;
     testDeviceId: string;
+    gender: "male" | "female" | "all";
 }

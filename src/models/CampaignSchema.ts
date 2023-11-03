@@ -84,6 +84,11 @@ const campaignSchema = new mongoose.Schema({
         type: String,
         default: "",
     },
+    gender: {
+        type: String,
+        enum: ["male", "female", "all"],
+        required: true,
+    },
 });
 
 const Campaign = mongoose.model<Campaign & mongoose.Document>(

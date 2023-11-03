@@ -25,7 +25,23 @@ class LoadController {
                 });
             }
 
-            const { deviceId, placementId, region } = req.body;
+            const { deviceId, placementId, region, gender } = req.body;
+            let genderValue = gender;
+
+            if (
+                genderValue &&
+                !["male", "female"].includes(gender.toLowerCase())
+            ) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "invalid gender",
+                    data: null,
+                });
+            }
+
+            if (!genderValue) {
+                genderValue = "unknown";
+            }
 
             const clientIp = requestIP.getClientIp(req);
 
@@ -82,6 +98,7 @@ class LoadController {
                     loadStatusName: LoadStatusName.PENDING,
                     country: loadCountry,
                     city: loadCity,
+                    gender: genderValue.toLowerCase(),
                     createdAt: new Date(Date.now()),
                     isTest: true,
                 });
@@ -97,6 +114,7 @@ class LoadController {
                         campaignId: selectedCampaign._id,
                         country: newLoad.country,
                         city: newLoad.city,
+                        gender: newLoad.gender,
                         createdAt: newLoad.createdAt,
                     },
                 });
@@ -135,11 +153,17 @@ class LoadController {
                         !campaign.targetedCities.includes("*") &&
                         campaign.country.toLowerCase() !== "all countries";
 
+                    const genderUnmatch =
+                        campaign.gender.toLowerCase() !==
+                            gender.toLowerCase() &&
+                        campaign.gender.toLowerCase() !== "all";
+
                     if (
                         !viewedInPastDay &&
                         !budgetExceeded &&
                         !countryUnmatch &&
-                        !cityUnmatch
+                        !cityUnmatch &&
+                        !genderUnmatch
                     ) {
                         return { campaign, servedCount, pendingCount };
                     }
@@ -213,6 +237,7 @@ class LoadController {
                 loadStatusName: LoadStatusName.PENDING,
                 country: loadCountry,
                 city: loadCity,
+                gender: genderValue.toLowerCase(),
                 createdAt: new Date(Date.now()),
             });
             await newLoad.save();
@@ -226,6 +251,8 @@ class LoadController {
                     userId: selectedCampaign.userId,
                     campaignId: selectedCampaign._id,
                     country: newLoad.country,
+                    city: newLoad.city,
+                    gender: newLoad.gender,
                     createdAt: newLoad.createdAt,
                 },
             });

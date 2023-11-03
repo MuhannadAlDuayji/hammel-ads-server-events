@@ -39,6 +39,11 @@ const loadSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    gender: {
+        type: String,
+        enum: ["male", "female", "unknown"],
+        required: true,
+    },
     isTest: {
         type: Boolean,
         default: false,

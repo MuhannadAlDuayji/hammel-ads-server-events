@@ -9,6 +9,7 @@ router.post(
     body("deviceId").notEmpty(),
     body("placementId").notEmpty(),
     body("region").notEmpty(),
+    body("gender").notEmpty(),
     LoadController.load
 );
 
