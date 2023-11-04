@@ -155,7 +155,7 @@ class LoadController {
 
                     const genderUnmatch =
                         campaign.gender.toLowerCase() !==
-                            gender.toLowerCase() &&
+                            genderValue.toLowerCase() &&
                         campaign.gender.toLowerCase() !== "all";
 
                     if (
